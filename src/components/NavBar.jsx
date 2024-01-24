@@ -1,5 +1,5 @@
 // NavBar.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -11,15 +11,31 @@ const NavBar = ({ image = true }) => {
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    // Function to handle scroll event
+    const handleScroll = () => {
+      // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
+      setIsScrolled(window.scrollY > 30);
+    };
+
+    // Attach the scroll event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
   };
 
-  const { data: movies, error } = useSearchMoviesQuery(query);
+  const { data: movies, isSuccess } = useSearchMoviesQuery(query);
+
   const handleSearch = async () => {
     try {
-      // Assuming you want to get the first movie for simplicity
       const firstMovie = movies;
 
       if (firstMovie) {
@@ -28,7 +44,7 @@ const NavBar = ({ image = true }) => {
         // You can perform additional logic or API calls here if needed
         console.log(titleId, "navbar");
         // Dispatch the setSearchResults action to update the search results in Redux store
-        dispatch(setSearchResults(movies?.Search || []));
+        dispatch(setSearchResults(movies || []));
       }
     } catch (error) {
       console.error("Error handling search:", error);
@@ -68,9 +84,9 @@ const NavBar = ({ image = true }) => {
             <div className="relative inline-block text-left">
               <button
                 type="button"
-                className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  hover:border-gray-400  ${
-                  isOpen ? "focus:ring focus:ring-blue-700 " : ""
-                }`}
+                className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  ${
+                  isOpen ? "" : "hover:border-gray-400"
+                }  ${isOpen ? "focus:ring focus:ring-blue-700 " : ""}`}
                 onClick={toggleDropdown}
               >
                 {/* You may replace this with your Avatar component */}
@@ -100,7 +116,6 @@ const NavBar = ({ image = true }) => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                     >
-                      {" "}
                       <Link to="/dashboard/profile">Profile</Link>
                     </button>
                     <button
@@ -154,7 +169,39 @@ const NavBar = ({ image = true }) => {
             </span>
           </button>
         </div>
-        {error && <div>Error loading movies: {error}</div>}
+
+        {isSuccess && movies?.Response === "True" ? (
+          <div
+            className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute transition-all ease-out ${
+              isScrolled ? "hidden transition-all ease-in" : ""
+            }`}
+          >
+            <ul className="bg-slate-950 bg-opacity-95 shadow-md text-black float-left w-full mt-0 transition-opacity">
+              <li className="float-left w-full block p-3 border-b-2 border-current">
+                <div className="float-left inline-block mr-[20px] h-2/4 w-24  overflow-hidden">
+                  <img
+                    src={movies.Poster}
+                    alt={movies.Title}
+                    className="w-full h-full rounded-md"
+                  />
+                </div>
+                <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
+                  {movies.Title}{" "}
+                  <span className="ml-1 text-[12px]">( {movies.Year} )</span>{" "}
+                  <span className="float-end">⭐ {movies.imdbRating}</span>
+                </div>
+                <p className="text-white text-wrap text-sm font-thin text-ellipsis font-mono">
+                  {movies.Plot}
+                </p>
+              </li>
+            </ul>
+          </div>
+        ) : (
+          // Display a message when no data is available
+          <div className="text-white">
+            {movies?.Error === "Incorrect IMDb ID." ? "" : movies?.Error}
+          </div>
+        )}
       </div>
     </>
   );

@@ -2,6 +2,7 @@
 import flowbitePlugin from 'flowbite/plugin';
 import defaultTheme from 'tailwindcss/defaultTheme';
 
+
 export default {
   content: [
     "./index.html",
@@ -24,5 +25,7 @@ export default {
   },
   plugins: [
     flowbitePlugin(),
+
+
   ],
 }
