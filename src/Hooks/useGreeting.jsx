@@ -1,0 +1,47 @@
+import { useEffect, useState } from "react";
+import moment from "moment-timezone";
+
+const useGreeting = () => {
+  const [greeting, setGreeting] = useState("");
+  const [showGreeting, setShowGreeting] = useState(true);
+
+  const getTimeOfDay = () => {
+    const userTimeZone = moment.tz.guess();
+    const currentTime = moment().tz(userTimeZone);
+    const currentHour = currentTime.hours();
+
+    if (currentHour >= 6 && currentHour < 12) {
+      setGreeting("Good morning ☀️");
+    } else if (currentHour >= 12 && currentHour < 18) {
+      setGreeting("Good afternoon 🌞");
+    } else if (currentHour >= 18 && currentHour < 24) {
+      setGreeting("Good evening 🌙");
+    } else {
+      setGreeting("Good night 🌚 ");
+    }
+  };
+
+  useEffect(() => {
+    getTimeOfDay(); // Initial greeting on component mount
+
+    // Update the greeting every minute (adjust as needed)
+    const interval = setInterval(getTimeOfDay, 60000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Hide the greeting after a specified duration (adjust as needed)
+    const timeout = setTimeout(() => {
+      setShowGreeting(false);
+    }, 6000);
+
+    // Cleanup the timeout on component unmount
+    return () => clearTimeout(timeout);
+  }, []);
+
+  return { greeting, showGreeting };
+};
+
+export default useGreeting;

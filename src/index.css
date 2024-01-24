@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.custom-transition {
+    transition: all .70s ease-in-out;
+    -webkit-transition: all .70s ease-in-out;
+
+}
