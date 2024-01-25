@@ -8,10 +8,13 @@ import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
 
 const NavBar = ({ image = true }) => {
+
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+
   useEffect(() => {
     // Function to handle scroll event
     const handleScroll = () => {
@@ -92,7 +95,7 @@ const NavBar = ({ image = true }) => {
                 {/* You may replace this with your Avatar component */}
                 <div className=" flex justify-center items-center ">
                   {image ? (
-                    <div className="  size-[3.5rem]  ">
+                    <div className="  size-[3.5rem] ">
                       <img
                         src={
                           "https://imgs.search.brave.com/Untz9IPAq0oiUcfN8fk7HLba5S-y5zmEOXfDG5xp1zk/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudW5zcGxhc2gu/Y29tL3Bob3RvLTE0/NDQ3MDM2ODY5ODEt/YTNhYmJjNGQ0ZmUz/P3E9ODAmdz0xMDAw/JmF1dG89Zm9ybWF0/JmZpdD1jcm9wJml4/bGliPXJiLTQuMC4z/Jml4aWQ9TTN3eE1q/QTNmREI4TUh4elpX/RnlZMmg4T0h4OGNH/bGpkSFZ5Wlh4bGJu/d3dmSHd3Zkh4OE1B/PT0.jpeg"
@@ -103,7 +106,7 @@ const NavBar = ({ image = true }) => {
                   ) : (
                     <FontAwesomeIcon
                       icon={faUser}
-                      className="fa-duotone text-3xl text-white h-full w-full  "
+                      className="fa-duotone text-3xl text-white h-full w-full "
                     />
                   )}
                 </div>
