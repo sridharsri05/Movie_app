@@ -2,7 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   movieDetails: [],
-  // ... other initial state properties
+  
 };
 
 const movieDetailsSlice = createSlice({

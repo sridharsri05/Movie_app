@@ -5,14 +5,14 @@ import react from '@vitejs/plugin-react-swc';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    proxy: {
-      '/vapi': {
-        target: "https://vidsrc.to",
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/vapi/, ''),
-      },
-    },
-  },
+  // server: {
+  //   proxy: {
+  //     '/vapi': {
+  //       target: "https://vidsrc.to",
+  //       changeOrigin: true,
+  //       secure: true,
+  //       rewrite: (path) => path.replace(/^\/vapi/, ''),
+  //     },
+  //   },
+  // },
 });

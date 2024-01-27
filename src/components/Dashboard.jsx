@@ -65,13 +65,13 @@ const Dashboard = () => {
         year={details?.Year}
         rating={details?.imdbRating}
         featured={true}
-        link={`https://www.imdb.com/title/${details?.imdbID}`}
+        link={`movie/${details?.imdbID}`}
       />
     ));
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <NavBar />
+      {/* <NavBar /> */}
       <main
         className={`container mx-auto mt-8 p-4 sm:p-8 lg:p-12 ${
           !showGreeting && "hidden"

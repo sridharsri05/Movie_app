@@ -11,15 +11,23 @@ export const omdbApi = createApi({
     searchMovies: builder.query({
       query: (query) => `?apikey=${OMBD_API_KEY}&t=${query}`,
     }),
+    searchByid: builder.query({
+      query: (imdbID) => `?apikey=${OMBD_API_KEY}&i=${imdbID}`,
+    }),
   }),
 });
 
+const baseQueryDefault = fetchBaseQuery({
+  baseUrl: "https://vidsrc.to",
+});
+
+// Create the API
 export const vidsrcApi = createApi({
   reducerPath: "vid_Api",
-  baseQuery: fetchBaseQuery({ baseUrl: "/vapi" }),
+  baseQuery: baseQueryDefault, // Use default base query for the API
   endpoints: (builder) => ({
     getPlayableMovie: builder.query({
-      query: (titleId) => `/embed/movie/${titleId}`,
+      query: (imdbID) => `/embed/movie/${imdbID}`,
     }),
     getNewlyAddedMovies: builder.query({
       query: (page) => `/vapi/movie/new/${page}`,
@@ -27,5 +35,7 @@ export const vidsrcApi = createApi({
   }),
 });
 
-export const { useSearchMoviesQuery } = omdbApi;
-export const { useGetPlayableMovieQuery, useGetNewlyAddedMoviesQuery } = vidsrcApi;
+// Extract hooks for using the API
+export const { useGetNewlyAddedMoviesQuery, useGetPlayableMovieQuery } = vidsrcApi;
+
+export const { useSearchMoviesQuery, useSearchByidQuery } = omdbApi;
