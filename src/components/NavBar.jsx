@@ -14,6 +14,7 @@ const NavBar = ({ image = true }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   useEffect(() => {
+    setIsMovieLinkClicked(false);
     // Function to handle scroll event
     const handleScroll = () => {
       // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
@@ -27,7 +28,7 @@ const NavBar = ({ image = true }) => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [query]);
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
