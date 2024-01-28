@@ -10,7 +10,9 @@ const PlayMovie = () => {
 
   return (
     <div className="">
-      <div>video</div>
+      <div>
+        <iframe src={`https://vidsrc.to/embed/movie/${imdbID}`} allowFullScreen></iframe>
+      </div>
       {/* leftside card */}
       <div>
         <div className="">
