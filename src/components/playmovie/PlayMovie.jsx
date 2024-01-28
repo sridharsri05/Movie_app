@@ -1,20 +1,20 @@
-
 import { useParams } from "react-router-dom";
 import {
-  useGetPlayableMovieQuery,
   useSearchByidQuery,
 } from "../../Redux/Services/MovieApi";
 
 const PlayMovie = () => {
-  const imdbID = useParams();
-  console.log(imdbID.imdbID);
+  const { imdbID } = useParams();
+  console.log(imdbID);
 
-  const { data } = useSearchByidQuery(imdbID.imdbID);
+  const { data } = useSearchByidQuery(imdbID);
   console.log(data, "movie data");
 
-  const { data: videos, status } = useGetPlayableMovieQuery(imdbID.imdbID);
-  console.log(videos, "vido");
-  return <div>{status}\</div>;
+  return (
+    <div className="">
+      <iframe src={`https://vidsrc.to/embed/movie/${imdbID}`} allowFullScreen></iframe>
+    </div>
+  );
 };
 
 export default PlayMovie;

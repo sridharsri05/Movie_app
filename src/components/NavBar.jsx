@@ -8,13 +8,11 @@ import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
 
 const NavBar = ({ image = true }) => {
-
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
-
+  const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   useEffect(() => {
     // Function to handle scroll event
     const handleScroll = () => {
@@ -36,7 +34,10 @@ const NavBar = ({ image = true }) => {
   };
 
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
-
+  const handleMovieLinkClick = () => {
+    // Set the state to true when a movie link is clicked
+    setIsMovieLinkClicked(true);
+  };
   const handleSearch = async () => {
     try {
       const firstMovie = movies;
@@ -173,31 +174,33 @@ const NavBar = ({ image = true }) => {
           </button>
         </div>
 
-        {isSuccess && movies?.Response === "True" ? (
+        {isSuccess && !isMovieLinkClicked && movies?.Response === "True" ? (
           <div
             className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute transition-all ease-out ${
               isScrolled ? "hidden transition-all ease-in" : ""
             }`}
           >
-            <ul className="bg-slate-950 bg-opacity-95 shadow-md text-black float-left w-full mt-0 transition-opacity">
-              <li className="float-left w-full block p-3 border-b-2 border-current">
-                <div className="float-left inline-block mr-[20px] h-2/4 w-24  overflow-hidden">
-                  <img
-                    src={movies.Poster}
-                    alt={movies.Title}
-                    className="w-full h-full rounded-md"
-                  />
-                </div>
-                <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
-                  {movies.Title}{" "}
-                  <span className="ml-1 text-[12px]">( {movies.Year} )</span>{" "}
-                  <span className="float-end">⭐ {movies.imdbRating}</span>
-                </div>
-                <p className="text-white text-wrap text-sm font-thin text-ellipsis font-mono">
-                  {movies.Plot}
-                </p>
-              </li>
-            </ul>
+            <Link to={`movie/${movies?.imdbID}`} onClick={handleMovieLinkClick}>
+              <ul className="bg-slate-950 bg-opacity-95 shadow-md text-black float-left w-full mt-0 transition-opacity">
+                <li className="float-left w-full block p-3 border-b-2 border-current">
+                  <div className="float-left inline-block mr-[20px] h-2/4 w-24  overflow-hidden">
+                    <img
+                      src={movies.Poster}
+                      alt={movies.Title}
+                      className="w-full h-full rounded-md"
+                    />
+                  </div>
+                  <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
+                    {movies.Title}{" "}
+                    <span className="ml-1 text-[12px]">( {movies.Year} )</span>{" "}
+                    <span className="float-end">⭐ {movies.imdbRating}</span>
+                  </div>
+                  <p className="text-white text-wrap text-sm font-thin text-ellipsis font-mono">
+                    {movies.Plot}
+                  </p>
+                </li>
+              </ul>
+            </Link>
           </div>
         ) : (
           // Display a message when no data is available

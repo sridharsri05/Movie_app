@@ -28,7 +28,7 @@ const MovieCard = ({ imageUrl, title, year, rating, link }) => {
 
           <div className="py-1 bg-transparent">
             <div className="font-bold text-white text-sm text-start mb-2 truncate font-libre">
-              <a href={link}>{title}</a>
+              <p>{title}</p>
             </div>
             <p className="text-gray-700 text-sm">
               <span className="font-extrabold">{year}</span>

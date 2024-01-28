@@ -4,11 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import MovieCards from "./Cards/MovieCards";
 import useGreeting from "../Hooks/useGreeting";
 import { allDetails, setMovieDetails } from "../Redux/movieDetailsSlice";
-import { useQuery, useQueryClient } from "react-query";
+import { useQueryClient } from "react-query";
 import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
 import { useGetNewlyAddedMoviesQuery } from "../Redux/Services/MovieApi";
-import { Pagination } from "flowbite-react";
+import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
+import Pagination from "./Pagination/Pagination";
 
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
@@ -20,7 +21,7 @@ const Dashboard = () => {
   const onPageChange = (page) => setCurrentPage(page);
   const queryClient = useQueryClient();
 
-  const { data } = useGetNewlyAddedMoviesQuery(currentPage);
+  const { data, isLoading } = useGetNewlyAddedMoviesQuery(currentPage);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -54,7 +55,13 @@ const Dashboard = () => {
   }, [data, dispatch]);
 
   const MovieCardsMemoized = React.memo(MovieCards);
-
+  let skeletonCards = [];
+  if (isLoading) {
+    // Render a fixed number of skeleton cards (e.g., 10)
+    for (let i = 0; i < 10; i++) {
+      skeletonCards.push(<MovieCardSkeleton key={i} />);
+    }
+  }
   const movies = movieDetails
     ?.filter((details) => details.Response === "True")
     .map((details) => (
@@ -92,22 +99,9 @@ const Dashboard = () => {
           🔥Latest Added
         </header>
         <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 py-5 px-3 gap-4 ">
-          {movies}
+          {isLoading ? skeletonCards : movies}
         </section>
-      </div>
-
-      <div className="flex justify-center my-8">
-        <button
-          type="button"
-          onClick={() => {
-            setCurrentPage((prevPage) => prevPage + 1);
-            queryClient.invalidateQueries("movieDetails");
-          }}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md mx-2"
-        >
-          Load More
-        </button>
-        <div className="flex overflow-x-auto sm:justify-center">
+        <div className="flex justify-center my-8  ">
           <Pagination
             currentPage={currentPage}
             totalPages={100}
