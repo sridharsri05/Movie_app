@@ -1,6 +1,6 @@
 // NavBar.js
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
@@ -13,8 +13,13 @@ const NavBar = ({ image = true }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
+  const location = useLocation();
+
   useEffect(() => {
     setIsMovieLinkClicked(false);
+  }, [location]);
+  console.log(isMovieLinkClicked, "just shecking");
+  useEffect(() => {
     // Function to handle scroll event
     const handleScroll = () => {
       // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
@@ -28,7 +33,7 @@ const NavBar = ({ image = true }) => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [query]);
+  }, []);
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
@@ -38,23 +43,26 @@ const NavBar = ({ image = true }) => {
   const handleMovieLinkClick = () => {
     // Set the state to true when a movie link is clicked
     setIsMovieLinkClicked(true);
+    setQuery("");
   };
-  const handleSearch = async () => {
-    try {
-      const firstMovie = movies;
+ const handleSearch = async () => {
+   try {
+     const firstMovie = movies;
 
-      if (firstMovie) {
-        // Fetch playable movie from vidsrcApi using titleId
-        const titleId = firstMovie.imdbID;
-        // You can perform additional logic or API calls here if needed
-        console.log(titleId, "navbar");
-        // Dispatch the setSearchResults action to update the search results in Redux store
-        dispatch(setSearchResults(movies || []));
-      }
-    } catch (error) {
-      console.error("Error handling search:", error);
-    }
-  };
+     if (firstMovie) {
+       // Fetch playable movie from vidsrcApi using titleId
+       const titleId = firstMovie.imdbID;
+       // You can perform additional logic or API calls here if needed
+       console.log(titleId, "navbar");
+       // Dispatch the setSearchResults action to update the search results in Redux store
+       dispatch(setSearchResults(movies || []));
+       setQuery("");
+     }
+   } catch (error) {
+     console.error("Error handling search:", error);
+   }
+ };
+
   return (
     <>
       <nav className="bg-gray-800 p-4 border-b-2 border-gray-900 ">
@@ -162,8 +170,14 @@ const NavBar = ({ image = true }) => {
             placeholder="Search Movies & Tv Shows/ webSeries"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
         </div>
+
         <div className=" mt-2">
           <button
             className="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800 "

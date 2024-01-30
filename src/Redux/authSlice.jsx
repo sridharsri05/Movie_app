@@ -8,7 +8,7 @@ export const login = createAsyncThunk("auth/login", async (userData, thunkAPI) =
     const response = await axios.post("/login", userData);
 
     // Decode the token to extract user and role information
-    const {userId} = jwtDecode(response.data.token);
+    const { userId } = jwtDecode(response.data.token);
     console.log(userId, "jwt data");
     localStorage.setItem("authToken", response.data.token);
     // Update the state directly without dispatching another action
@@ -37,19 +37,20 @@ export const login = createAsyncThunk("auth/login", async (userData, thunkAPI) =
   }
 });
 
-const registerUserAPI = async (userData) => {
-  try {
-    const response = await axios.post("/signup", userData);
-    return response.data; // Assuming the backend returns user data upon successful registration
-  } catch (error) {
-    throw new Error("Failed to register user", error);
-  }
-};
+// const registerUserAPI = async (userData) => {
+//   try {
+//     const response = await axios.post("/signup", userData);
+//     return response.data; // Assuming the backend returns user data upon successful registration
+//   } catch (error) {
+//     return error.response ? error.response.data : error.message;
+//   }
+// };
 
 export const signUp = createAsyncThunk("auth/signUp", async (userData, thunkAPI) => {
   try {
-    const response = await registerUserAPI(userData);
-    return response; // Assuming the backend returns user data upon successful registration
+    const response = await axios.post("/signup", userData);
+    console.log(response.data);
+    return response.data; // Assuming the backend returns user data upon successful registration
   } catch (error) {
     return thunkAPI.rejectWithValue({
       error: error.response ? error.response.data : error.message,
@@ -70,7 +71,7 @@ const authSlice = createSlice({
       const { user } = action.payload;
       state.isAuthenticated = true;
       state.user = user;
-      state.role = user.role; 
+      state.role = user.role;
       state.error = null;
     },
     logout: (state) => {

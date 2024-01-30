@@ -27,14 +27,15 @@ const SignUp = () => {
       .unwrap() // Unwraps the result from createAsyncThunk
       .then((response) => {
         // Additional logic if needed, such as redirecting after successful sign-up
-        console.log("User successfully registered:", response);
-        if (response.status === 200) {
+
+        if (response && response.status === "success") {
+          console.log("User successfully registered:", response.message);
           navigate("/login");
         }
       })
       .catch((error) => {
         // Handle registration failure
-        console.error("Registration failed:", error.error);
+        console.error("Registration failed:", error.error.message);
       });
   };
 
