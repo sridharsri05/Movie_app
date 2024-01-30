@@ -96,10 +96,10 @@ const SignUp = () => {
             Sign Up
           </button>
           <span className=" px-2 ml-[3.5rem] text-gray-600  font-medium text-sm">
-            Already have an account ?{" "}
+            Already have an account ?
             <Link to="/login" className="text-blue-500 hover:underline ">
               Login here
-            </Link>{" "}
+            </Link>
           </span>
         </form>
       </div>
