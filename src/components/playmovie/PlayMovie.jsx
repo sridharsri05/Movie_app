@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
+import MovieCard from "../Cards/MovieCards";
 
 const PlayMovie = () => {
   const { imdbID } = useParams();
@@ -10,10 +11,10 @@ const PlayMovie = () => {
 
   return (
     <>
-      <div className=" bg-black pt-6">
+      <div className="pt-6 bg-black ">
         <div className=" mx-14 mb-8  h-[31rem] ">
           <iframe
-            className=" w-full  h-full rounded-2xl"
+            className="w-full h-full rounded-2xl"
             src={`https://vidsrc.to/embed/movie/${imdbID}`}
             allowFullScreen
           ></iframe>
@@ -23,13 +24,13 @@ const PlayMovie = () => {
 
         <div className="relative ">
           <div className="mx-auto max-w-[1920px] relative w-full">
-            <div className=" flex flex-wrap mx-16">
+            <div className="flex flex-wrap mx-16 ">
               <div className=" flex-grow-0 flex-shrink-0 basis-1/4 max-w-[25%] min-h-[1px] px-1 relative w-full ">
                 <div className=" mb-8 sticky z-10 w-full mx-[-24px]">
-                  <div className=" rounded-r rounded-l flex overflow-hidden relative w-full">
+                  <div className="relative flex w-full overflow-hidden rounded-l rounded-r ">
                     <div className=" flex-1 h-0 py-[71.75%] px-0 relative transition-transform  duration-300 ease w-full ">
                       <img
-                        className=" h-full left-0 object-cover absolute top-0 w-full border-none box-border "
+                        className="box-border absolute top-0 left-0 object-cover w-full h-full border-none "
                         src={data?.Poster}
                         alt={data?.Title}
                       />
@@ -44,24 +45,24 @@ const PlayMovie = () => {
                   {data?.Title}
                 </div>
 
-                <div className=" text-white text-opacity-75 text-sm font-medium leading-6 tracking-normal ">
-                  <div className=" items-center flex flex-wrap gap-x-1">
-                    <span className=" mr-3">
+                <div className="text-sm font-medium leading-6 tracking-normal text-white text-opacity-75 ">
+                  <div className="flex flex-wrap items-center gap-x-1">
+                    <span className="mr-3 ">
                       {" "}
                       {data?.Year} - {data?.Runtime}
                     </span>
                     {/* svg */}
                     {/* Rating */}
-                    <div className=" inline-flex ">
+                    <div className="inline-flex ">
                       <div className=" items-center flex -mt-[1px]">
-                        <div className=" bg-white bg-opacity-20 text-white text-opacity-80 text-xs font-black leading-4 tracking-normal rounded-lg  pt-0 pr-2 pb-0 pl-2 ">
+                        <div className="pt-0 pb-0 pl-2 pr-2 text-xs font-black leading-4 tracking-normal text-white bg-white rounded-lg bg-opacity-20 text-opacity-80">
                           {data?.Rated}
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className=" block  ">
-                    <div className="  text-white cursor-pointer inline-block  leading-normal relative  transition-opacity duration-300  bg-transparent font-normal">
+                  <div className="block ">
+                    <div className="relative inline-block font-normal leading-normal text-white transition-opacity duration-300 bg-transparent cursor-pointer ">
                       {data?.Genre}
                     </div>
                   </div>
@@ -69,7 +70,7 @@ const PlayMovie = () => {
                     {data?.Plot}
                   </p>
                   <div className=" text-[16px]  leading-6 relative w-Full mb-20 ">
-                    <div className=" flex">
+                    <div className="flex ">
                       <span className=" inline-block flex-grow-0 flex-shrink w-40  text-white  text-[16px]  leading-6 ">
                         {" "}
                         Starring{" "}
@@ -78,7 +79,7 @@ const PlayMovie = () => {
                         {data?.Actors}
                       </span>
                     </div>
-                    <div className=" flex">
+                    <div className="flex ">
                       <span className="text-white text-opacity-75 inline-block flex-grow-0 flex-shrink-0 w-[8.5rem]">
                         Directed by
                       </span>
@@ -86,6 +87,8 @@ const PlayMovie = () => {
                         {data?.Director}
                       </span>
                     </div>
+                    <div className="my-10 border-b border-gray-700 border-"></div>
+                    <div className="text-2xl text-white">You May Also Like</div>
                   </div>
                 </div>
               </div>
