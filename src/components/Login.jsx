@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { login } from "../Redux/authSlice"; // Import your login action
+import { login } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -20,25 +21,32 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     // Dispatch the login action with the form data
-    dispatch(login(formData))
-      .then((response) => {
-        console.log(response, "checkinggg");
-        if (response && response.payload.payload.status === "success") {
-          console.log("User successfully logged in:", response.payload);
-          const { role } = response.payload.payload.user;
-          if (role === "admin") {
-            navigate("/admindashboard");
-          } else {
-            navigate("/dashboard");
-          }
+    dispatch(login(formData)).then((response) => {
+      console.log(response, "checkinggg");
+      if (response && response.payload.status === "success") {
+        console.log("User successfully logged in:", response.payload);
+        toast.success(response.payload.message, {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        const { role } = response.payload.user;
+        if (role === "admin") {
+          navigate("/admindashboard");
+        } else {
+          navigate("/dashboard");
         }
-      })
-      .catch((error) => {
+      } else {
+        const { error } = response.payload;
+
+        toast.error(error.message, {
+          position: "top-right",
+          autoClose: 2000,
+        });
         // Handle login failure
-        console.error("Login failed:", error.message);
-      });
+        console.error("Login failed:", error);
+      }
+    });
   };
 
   return (

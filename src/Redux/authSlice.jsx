@@ -19,10 +19,7 @@ export const login = createAsyncThunk("auth/login", async (userData, thunkAPI) =
     );
     console.log(response.data);
     // Assuming the backend returns user data upon successful login
-    return {
-      role: userId.role,
-      payload: response.data,
-    };
+    return response.data;
   } catch (error) {
     // Log the actual error response
     console.error(
@@ -36,15 +33,6 @@ export const login = createAsyncThunk("auth/login", async (userData, thunkAPI) =
     });
   }
 });
-
-// const registerUserAPI = async (userData) => {
-//   try {
-//     const response = await axios.post("/signup", userData);
-//     return response.data; // Assuming the backend returns user data upon successful registration
-//   } catch (error) {
-//     return error.response ? error.response.data : error.message;
-//   }
-// };
 
 export const signUp = createAsyncThunk("auth/signUp", async (userData, thunkAPI) => {
   try {
@@ -75,6 +63,7 @@ const authSlice = createSlice({
       state.error = null;
     },
     logout: (state) => {
+      localStorage.removeItem("authToken");
       state.isAuthenticated = false;
       state.user = null;
       state.role = null;

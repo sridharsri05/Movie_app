@@ -7,7 +7,8 @@ import Dashboard from "./components/Dashboard";
 import useAuthInitialization from "./Hooks/useAuthInitialization";
 import Profile from "./components/Profile/Profile";
 import PlayMovie from "./components/playmovie/PlayMovie";
-import NavBar from "./components/NavBar";
+
+
 import DashboardLayout from "./components/Layout/DashboardLayout";
 
 function App() {

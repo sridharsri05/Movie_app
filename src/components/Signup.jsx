@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { signUp } from "../Redux/authSlice"; // Import your signUp action
+import { signUp } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -21,19 +22,25 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Dispatch the signUp action with the form data
     dispatch(signUp(formData))
       .unwrap() // Unwraps the result from createAsyncThunk
       .then((response) => {
         // Additional logic if needed, such as redirecting after successful sign-up
 
         if (response && response.status === "success") {
+          toast.success(response.message, {
+            position: "top-right",
+            autoClose: 2000,
+          });
           console.log("User successfully registered:", response.message);
           navigate("/login");
         }
       })
       .catch((error) => {
+        toast.error(error.error.message, {
+          position: "top-right",
+          autoClose: 3000,
+        });
         // Handle registration failure
         console.error("Registration failed:", error.error.message);
       });

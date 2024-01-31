@@ -6,6 +6,7 @@ import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-i
 import { useDispatch } from "react-redux";
 import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
+import { logout } from "../Redux/authSlice";
 
 const NavBar = ({ image = true }) => {
   const [query, setQuery] = useState("");
@@ -45,24 +46,28 @@ const NavBar = ({ image = true }) => {
     setIsMovieLinkClicked(true);
     setQuery("");
   };
- const handleSearch = async () => {
-   try {
-     const firstMovie = movies;
+  const handleSearch = async () => {
+    try {
+      const firstMovie = movies;
 
-     if (firstMovie) {
-       // Fetch playable movie from vidsrcApi using titleId
-       const titleId = firstMovie.imdbID;
-       // You can perform additional logic or API calls here if needed
-       console.log(titleId, "navbar");
-       // Dispatch the setSearchResults action to update the search results in Redux store
-       dispatch(setSearchResults(movies || []));
-       setQuery("");
-     }
-   } catch (error) {
-     console.error("Error handling search:", error);
-   }
- };
-
+      if (firstMovie) {
+        // Fetch playable movie from vidsrcApi using titleId
+        const titleId = firstMovie.imdbID;
+        // You can perform additional logic or API calls here if needed
+        console.log(titleId, "navbar");
+        // Dispatch the setSearchResults action to update the search results in Redux store
+        dispatch(setSearchResults(movies || []));
+        setQuery("");
+      }
+    } catch (error) {
+      console.error("Error handling search:", error);
+    }
+  };
+  const handleSignOut = () => {
+    // Dispatch the logout action
+    dispatch(logout());
+    // You can also add other logic here, such as redirecting the user to the login page
+  };
   return (
     <>
       <nav className="bg-gray-800 p-4 border-b-2 border-gray-900 ">
@@ -147,6 +152,7 @@ const NavBar = ({ image = true }) => {
                     <button
                       className="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
+                      onClick={handleSignOut}
                     >
                       Sign out
                     </button>
