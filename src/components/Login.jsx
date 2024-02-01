@@ -92,7 +92,7 @@ const Login = () => {
           </button>
           <span className=" px-2 ml-[3.5rem] text-gray-600  font-medium text-sm ">
             Don't have an account ?{" "}
-            <Link to="/" className="text-blue-500 hover:underline ">
+            <Link to="/signup" className="text-blue-500 hover:underline ">
               SignUp here
             </Link>{" "}
           </span>
