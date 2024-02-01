@@ -34,7 +34,7 @@ const Login = () => {
         if (role === "admin") {
           navigate("/admindashboard");
         } else {
-          navigate("/dashboard");
+          navigate("/dashboard/");
         }
       } else {
         const { error } = response.payload;
