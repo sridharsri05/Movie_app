@@ -8,7 +8,10 @@ import { allDetails, setMovieDetails } from "../Redux/movieDetailsSlice";
 import { useQueryClient } from "react-query";
 import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
-import { useGetNewlyAddedMoviesQuery } from "../Redux/Services/MovieApi";
+import {
+  useGetNewlyAddedMovies2Query,
+  useGetNewlyAddedMoviesQuery,
+} from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import Pagination from "./Pagination/Pagination";
 
@@ -22,8 +25,8 @@ const Dashboard = () => {
   const onPageChange = (page) => setCurrentPage(page);
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useGetNewlyAddedMoviesQuery(currentPage);
-
+  const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
+  console.log(data, "de");
   useEffect(() => {
     const fetchMovieDetails = async () => {
       if (data && data.result && data.result.items) {
@@ -33,12 +36,9 @@ const Dashboard = () => {
         try {
           const responses = await axios.all(
             imdbIds.map((imdbId) =>
-              axios.post(
-                "https://server-coral-delta.vercel.app/getLatestMovies",
-                {
-                  imdbIds: [imdbId],
-                }
-              )
+              axios.post("https://server-coral-delta.vercel.app/getLatestMovies", {
+                imdbIds: [imdbId],
+              })
             )
           );
 
@@ -109,12 +109,9 @@ const Dashboard = () => {
         {showGreeting && (
           <div className="text-center">
             <h1 className="mb-4 text-4xl font-bold text-gray-800">
-              Welcome back,{" "}
-              <span className="text-blue-600">{user.username}</span>!
+              Welcome back, <span className="text-blue-600">{user.username}</span>!
             </h1>
-            <p className="mb-8 text-lg font-bold text-gray-600">
-              {greeting} buddy! ❤️
-            </p>
+            <p className="mb-8 text-lg font-bold text-gray-600">{greeting} buddy! ❤️</p>
           </div>
         )}
       </main>

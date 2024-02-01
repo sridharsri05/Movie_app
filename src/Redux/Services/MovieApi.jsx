@@ -35,7 +35,19 @@ export const vidsrcApi = createApi({
   }),
 });
 
+export const vidsrcApi2 = createApi({
+  reducerPath: "vid_Api2",
+  baseQuery: fetchBaseQuery({
+    baseUrl: Apis.baseURL,
+  }),
+  endpoints: (builder) => ({
+    getNewlyAddedMovies2: builder.query({
+      query: (page) => `/api/vapi/movie/new/${page}`,
+    }),
+  }),
+});
+
 // Extract hooks for using the API
 export const { useGetNewlyAddedMoviesQuery, useGetPlayableMovieQuery } = vidsrcApi;
-
+export const { useGetNewlyAddedMovies2Query } = vidsrcApi2;
 export const { useSearchMoviesQuery, useSearchByidQuery } = omdbApi;
