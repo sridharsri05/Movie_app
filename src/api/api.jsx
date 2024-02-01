@@ -13,6 +13,6 @@ export default instance;
 // export const VIDSRC_API = "https://vidsrc.to/";
 
 export const Apis = {
-  OMBD_API: "http://www.omdbapi.com/",
+  OMBD_API: "https://www.omdbapi.com/",
   VIDSRC_API: "https://vidsrc.to",
 };
