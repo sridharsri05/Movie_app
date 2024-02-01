@@ -2,11 +2,15 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
-import { useDispatch } from "react-redux";
+import {
+  faBarsStaggered,
+  faUser,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
+import { useDispatch, useSelector } from "react-redux";
 import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
-import { logout } from "../Redux/authSlice";
+import { logout, selectAuth } from "../Redux/authSlice";
 
 const NavBar = ({ image = true }) => {
   const [query, setQuery] = useState("");
@@ -15,7 +19,7 @@ const NavBar = ({ image = true }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   const location = useLocation();
-
+  const {user }=useSelector(selectAuth)
   useEffect(() => {
     setIsMovieLinkClicked(false);
   }, [location]);
@@ -70,17 +74,17 @@ const NavBar = ({ image = true }) => {
   };
   return (
     <>
-      <nav className="bg-gray-800 p-4 border-b-2 border-gray-900 ">
-        <div className="container mx-auto flex items-center justify-between">
+      <nav className="p-4 bg-gray-800 border-b-2 border-gray-900 ">
+        <div className="container flex items-center justify-between mx-auto">
           {/* Mobile Menu Icon */}
-          <button className="lg:hidden text-white focus:outline-none">
+          <button className="text-white lg:hidden focus:outline-none">
             <FontAwesomeIcon className="fa-solid" icon={faBarsStaggered} />
           </button>
 
           {/* Logo or Brand (centered) */}
           <Link
             to="/dashboard"
-            className="text-white text-4xl font-libre font-bold mx-auto lg:mx-0"
+            className="mx-auto text-4xl font-bold text-white font-libre lg:mx-0"
           >
             MovieHub
           </Link>
@@ -90,15 +94,21 @@ const NavBar = ({ image = true }) => {
             <Link to="/dashboard" className="text-white hover:text-gray-300">
               Home
             </Link>
-            <Link to="/dashboard/dropdown1" className="text-white hover:text-gray-300">
+            <Link
+              to="/dashboard/dropdown1"
+              className="text-white hover:text-gray-300"
+            >
               Dropdown 1
             </Link>
-            <Link to="/dashboard/dropdown2" className="text-white hover:text-gray-300">
+            <Link
+              to="/dashboard/dropdown2"
+              className="text-white hover:text-gray-300"
+            >
               Dropdown 2
             </Link>
           </div>
           {/* User Profile */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="items-center hidden space-x-4 lg:flex">
             <div className="relative inline-block text-left">
               <button
                 type="button"
@@ -108,33 +118,48 @@ const NavBar = ({ image = true }) => {
                 onClick={toggleDropdown}
               >
                 {/* You may replace this with your Avatar component */}
-                <div className=" flex justify-center items-center ">
+                <div className="flex items-center justify-center ">
                   {image ? (
                     <div className="  size-[3.5rem] ">
                       <img
                         src={
                           "https://imgs.search.brave.com/Untz9IPAq0oiUcfN8fk7HLba5S-y5zmEOXfDG5xp1zk/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudW5zcGxhc2gu/Y29tL3Bob3RvLTE0/NDQ3MDM2ODY5ODEt/YTNhYmJjNGQ0ZmUz/P3E9ODAmdz0xMDAw/JmF1dG89Zm9ybWF0/JmZpdD1jcm9wJml4/bGliPXJiLTQuMC4z/Jml4aWQ9TTN3eE1q/QTNmREI4TUh4elpX/RnlZMmg4T0h4OGNH/bGpkSFZ5Wlh4bGJu/d3dmSHd3Zkh4OE1B/PT0.jpeg"
                         }
-                        className="fa-duotone text-3xl text-white h-full w-full  border border-gray-800 object-cover rounded-full"
+                        className="object-cover w-full h-full text-3xl text-white border border-gray-800 rounded-full fa-duotone"
                       />
                     </div>
                   ) : (
                     <FontAwesomeIcon
                       icon={faUser}
-                      className="fa-duotone text-3xl text-white h-full w-full "
+                      className="w-full h-full text-3xl text-white fa-duotone "
                     />
                   )}
                 </div>
               </button>
 
               {isOpen && (
-                <div className="origin-top-right absolute z-50 right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre">
-                  <div className="py-1">
+                <div className="origin-top-right absolute z-50 right-0 mt-2  min-w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre">
+                  <div className="flex justify-evenly items-center realtive pt-1">
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
+                    />
+                    <div className=" text-black-800 ">
+                      <div className=" text-[1rem]  ">{ user.username}</div>
+                      <ul className=" text-xs text-blue-500 font-libre">
+                        <li>Free</li>
+                        <li>online</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <hr className="mt-3" />
+                  <div className="py-1 *:">
                     <button
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                     >
-                      <Link to="/dashboard/profile">Profile</Link>
+                      <Link to="/dashboard/profile"> Edit Profile</Link>
                     </button>
                     <button
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -165,14 +190,14 @@ const NavBar = ({ image = true }) => {
       </nav>
 
       {/* Additional content or search functionality */}
-      <div className="flex items-center space-x-4 ml-auto bg-gray-800 p-4 place-content-center">
+      <div className="flex items-center p-4 ml-auto space-x-4 bg-gray-800 place-content-center">
         <div className="relative text-gray-600 focus-within:text-gray-400 w-[70rem]">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
             <FontAwesomeIcon icon={faSearch} className="text-lg" />
           </span>
           <input
             type="search"
-            className="py-2 pl-10 pr-4 border rounded-md focus:outline-none border-green-500 focus:border-green-500 bg-transparent w-full"
+            className="w-full py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none focus:border-green-500"
             placeholder="Search Movies & Tv Shows/ webSeries"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -184,7 +209,7 @@ const NavBar = ({ image = true }) => {
           />
         </div>
 
-        <div className=" mt-2">
+        <div className="mt-2 ">
           <button
             className="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800 "
             onClick={handleSearch}
@@ -202,8 +227,8 @@ const NavBar = ({ image = true }) => {
             }`}
           >
             <Link to={`movie/${movies?.imdbID}`} onClick={handleMovieLinkClick}>
-              <ul className="bg-slate-950 bg-opacity-95 shadow-md text-black float-left w-full mt-0 transition-opacity">
-                <li className="float-left w-full block p-3 border-b-2 border-current">
+              <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-950 bg-opacity-95">
+                <li className="block float-left w-full p-3 border-b-2 border-current">
                   <div className="float-left inline-block mr-[20px] h-2/4 w-24  overflow-hidden">
                     <img
                       src={movies.Poster}
@@ -216,7 +241,7 @@ const NavBar = ({ image = true }) => {
                     <span className="ml-1 text-[12px]">( {movies.Year} )</span>{" "}
                     <span className="float-end">⭐ {movies.imdbRating}</span>
                   </div>
-                  <p className="text-white text-wrap text-sm font-thin text-ellipsis font-mono">
+                  <p className="font-mono text-sm font-thin text-white text-wrap text-ellipsis">
                     {movies.Plot}
                   </p>
                 </li>
