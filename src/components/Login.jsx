@@ -39,7 +39,7 @@ const Login = () => {
       } else {
         const { error } = response.payload;
 
-        toast.error(error.message, {
+        toast.error(error.message||error, {
           position: "top-right",
           autoClose: 2000,
         });
