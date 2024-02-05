@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from "react";
-import NavBar from "./NavBar";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import MovieCards from "./Cards/MovieCards";
 import useGreeting from "../Hooks/useGreeting";
 import { allDetails, setMovieDetails } from "../Redux/movieDetailsSlice";
-import { useQueryClient } from "react-query";
 import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
-import {
-  useGetNewlyAddedMovies2Query,
-  useGetNewlyAddedMoviesQuery,
-} from "../Redux/Services/MovieApi";
+import { useGetNewlyAddedMovies2Query } from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
-import Pagination from "./Pagination/Pagination";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
@@ -22,16 +17,15 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const dispatch = useDispatch();
 
-  const onPageChange = (page) => setCurrentPage(page);
-  const queryClient = useQueryClient();
-
   const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
   console.log(data, "de");
+
   useEffect(() => {
     const fetchMovieDetails = async () => {
       if (data && data.result && data.result.items) {
         const imdbIds = data.result.items.map((item) => item.imdb_id) || [];
         console.log({ imdbIds });
+        console.log("page no :", currentPage);
 
         try {
           const responses = await axios.all(
@@ -56,7 +50,7 @@ const Dashboard = () => {
     };
 
     fetchMovieDetails();
-  }, [data, dispatch]);
+  }, [currentPage, data, dispatch]);
 
   const MovieCardsMemoized = React.memo(MovieCards);
   let skeletonCards = [];
@@ -120,22 +114,26 @@ const Dashboard = () => {
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
           🔥Latest Added
         </header>
-        <motion.section
-          className="grid grid-cols-2 gap-4 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 "
-          initial="hidden"
-          animate="visible"
-          variants={container}
+        <InfiniteScroll
+          dataLength={movies.length} //This is important field to render the next data
+          next={() => setCurrentPage((prevPage) => prevPage + 1)} // Load next page data
+          hasMore={true} // Set to true to enable infinite scroll
+          loader={<h4>Loading...</h4>}
+          endMessage={
+            <p className="text-center ">
+              <b>Yay! You have seen it all</b>
+            </p>
+          }
         >
-          {isLoading ? skeletonCards : movies}
-        </motion.section>
-        <div className="flex justify-center my-8 ">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={100}
-            onPageChange={onPageChange}
-            showIcons
-          />
-        </div>
+          <motion.section
+            className="grid s:grid-cols-1 m:grid-cols-2 gap-4 s:px-2 m:px-1 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 "
+            initial="hidden"
+            animate="visible"
+            variants={container}
+          >
+            {isLoading ? skeletonCards : movies}
+          </motion.section>
+        </InfiniteScroll>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ export default {
         's': '320px',
         'm': '375px',
         'l': '425px',
-
+        ...defaultTheme.screens,
 
       },
       fontFamily: {
