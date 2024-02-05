@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { login } from "../Redux/authSlice";
+import { login, setLoading } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import GoogleSignin from "../utils/GoogleSignin";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -21,9 +22,11 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+      dispatch(setLoading(true));
     // Dispatch the login action with the form data
     dispatch(login(formData)).then((response) => {
       console.log(response, "checkinggg");
+        dispatch(setLoading(false));
       if (response && response.payload.status === "success") {
         console.log("User successfully logged in:", response.payload);
         toast.success(response.payload.message, {
@@ -38,8 +41,8 @@ const Login = () => {
         }
       } else {
         const { error } = response.payload;
-
-        toast.error(error.message||error, {
+dispatch(setLoading(false));
+        toast.error(error.message || error, {
           position: "top-right",
           autoClose: 2000,
         });
@@ -50,8 +53,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="max-w-md w-full p-6 bg-white rounded-md shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-indigo-500 ">
+      <div className="max-w-md w-full p-6 bg-white rounded-md shadow-">
         <h2 className="text-2xl font-semibold mb-4 text-center">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -97,6 +100,12 @@ const Login = () => {
             </Link>{" "}
           </span>
         </form>
+        <div className=" flex place-content-center my-1">
+          <hr className="  my-2 w-56     " />
+        </div>
+
+        <span className="flex place-content-center text-sm text-blue-400"> or </span>
+        <GoogleSignin/>
       </div>
     </div>
   );

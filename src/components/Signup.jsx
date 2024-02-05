@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { signUp } from "../Redux/authSlice";
+import { setLoading, signUp } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import GoogleSignin from "../utils/GoogleSignin";
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -22,6 +23,8 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+     dispatch(setLoading(true));
+
     dispatch(signUp(formData))
       .unwrap() // Unwraps the result from createAsyncThunk
       .then((response) => {
@@ -37,6 +40,8 @@ const SignUp = () => {
         }
       })
       .catch((error) => {
+         dispatch(setLoading(false));
+
         toast.error(error.error.message, {
           position: "top-right",
           autoClose: 3000,
@@ -98,17 +103,23 @@ const SignUp = () => {
 
           <button
             type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+            className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600  w-full"
           >
             Sign Up
           </button>
-          <span className=" px-2 ml-[3.5rem] text-gray-600  font-medium text-sm">
-            Already have an account ?
-            <Link to="/login" className="text-blue-500 hover:underline ">
-              Login here
-            </Link>
-          </span>
         </form>
+        <span className=" flex gap-2 mt-2 mx-auto text-gray-600  font-medium text-sm">
+          Already have an account ?
+          <Link to="/login" className="text-blue-500 hover:underline ">
+            Login here
+          </Link>
+        </span>
+        <div className=" flex place-content-center my-1">
+          <hr className="  my-2 w-56     " />
+        </div>
+
+        <span className="flex place-content-center text-sm text-blue-400"> or </span>
+        <GoogleSignin />
       </div>
     </div>
   );

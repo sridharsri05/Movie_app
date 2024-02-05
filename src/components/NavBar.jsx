@@ -2,11 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBarsStaggered,
-  faUser,
-  faSearch,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
@@ -19,18 +15,18 @@ const NavBar = ({ image = true }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   const location = useLocation();
-  const {user }=useSelector(selectAuth)
+  const { user } = useSelector(selectAuth);
+  const { data: movies, isSuccess } = useSearchMoviesQuery(query);
   useEffect(() => {
     setIsMovieLinkClicked(false);
   }, [location]);
-  console.log(isMovieLinkClicked, "just shecking");
+
   useEffect(() => {
     // Function to handle scroll event
     const handleScroll = () => {
       // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
       setIsScrolled(window.scrollY > 30);
     };
-
     // Attach the scroll event listener
     window.addEventListener("scroll", handleScroll);
 
@@ -44,12 +40,12 @@ const NavBar = ({ image = true }) => {
     setIsOpen((prev) => !prev);
   };
 
-  const { data: movies, isSuccess } = useSearchMoviesQuery(query);
   const handleMovieLinkClick = () => {
     // Set the state to true when a movie link is clicked
     setIsMovieLinkClicked(true);
     setQuery("");
   };
+
   const handleSearch = async () => {
     try {
       const firstMovie = movies;
@@ -94,16 +90,10 @@ const NavBar = ({ image = true }) => {
             <Link to="/dashboard" className="text-white hover:text-gray-300">
               Home
             </Link>
-            <Link
-              to="/dashboard/dropdown1"
-              className="text-white hover:text-gray-300"
-            >
+            <Link to="/dashboard/dropdown1" className="text-white hover:text-gray-300">
               Dropdown 1
             </Link>
-            <Link
-              to="/dashboard/dropdown2"
-              className="text-white hover:text-gray-300"
-            >
+            <Link to="/dashboard/dropdown2" className="text-white hover:text-gray-300">
               Dropdown 2
             </Link>
           </div>
@@ -145,7 +135,7 @@ const NavBar = ({ image = true }) => {
                       className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
                     />
                     <div className=" text-black-800 ">
-                      <div className=" text-[1rem]  ">{ user.username}</div>
+                      <div className=" text-[1rem]  ">{user.username}</div>
                       <ul className=" text-xs text-blue-500 font-libre">
                         <li>Free</li>
                         <li>online</li>
