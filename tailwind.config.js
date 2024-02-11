@@ -11,17 +11,31 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        white: "#fff",
+        palevioletred: "#a93159",
+        steelblue: "#465685",
+        silver: "#bcbec0",
+        lightslategray: "#798995",
+        darkslategray: "#414042",
+        aliceblue: "#e2eef5",
+      },
+      borderRadius: {
+        "21xl": "40px",
+      },
       screens: {
         's': '320px',
         'm': '375px',
         'l': '425px',
+        '3xl': '2560px',
         ...defaultTheme.screens,
 
       },
       fontFamily: {
-        libre: ['"Poppins"', ...defaultTheme.fontFamily.sans]
+        libre: ['"Poppins"', ...defaultTheme.fontFamily.sans], gilroy: "Gilroy",
       }
     },
+
   },
   plugins: [
     // flowbitePlugin(),
