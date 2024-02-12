@@ -9,6 +9,7 @@ import { selectAuth } from "../Redux/authSlice";
 import { useGetNewlyAddedMovies2Query } from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
@@ -44,6 +45,10 @@ const Dashboard = () => {
           console.log("Movie List:", movieList); // Log the flattened movieList
           dispatch(setMovieDetails(movieList));
         } catch (error) {
+          toast.error(error, {
+            position: "top-right",
+            autoClose: 3000,
+          });
           console.error("Error fetching new movie details:", error);
         }
       }
@@ -93,10 +98,10 @@ const Dashboard = () => {
     ));
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen ">
       {/* <NavBar /> */}
       <main
-        className={`container mx-auto mt-8 p-4 sm:p-8 lg:p-12 ${
+        className={`container mx-auto  bg-transparent mt-8 p-4 sm:p-8 lg:p-12 ${
           !showGreeting && "hidden"
         }`}
       >
@@ -114,6 +119,7 @@ const Dashboard = () => {
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
           🔥Latest Added
         </header>
+
         <InfiniteScroll
           dataLength={movies.length} //This is important field to render the next data
           next={() => setCurrentPage((prevPage) => prevPage + 1)} // Load next page data

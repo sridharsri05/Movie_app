@@ -8,9 +8,10 @@ import svg1 from "../../public/avatar-makata-vespa-04-2@2x.png";
 import svg2 from "../../public/avatar-makata-vespa-04-1@2x.png";
 import svg3 from "../../public/akariconsgithubfill.svg";
 import fbsvg from "../../public/bifacebook.svg";
-import svg5 from "../../public/clarityeyehideline.svg";
-import svg6 from "../../public/flatcoloriconsgoogle.svg";
-import Logo from "../../public/MovieHub.png";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+
+
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -18,7 +19,11 @@ const Login = () => {
     email: "",
     password: "",
   });
+const [showPassword, setShowPassword] = useState(false);
 
+const togglePasswordVisibility = () => {
+  setShowPassword(!showPassword);
+};
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -59,61 +64,6 @@ const Login = () => {
   };
 
   return (
-    // <div className="min-h-screen flex items-center justify-center bg-indigo-500  ">
-    //   <div className=" max-w-md w-full p-6 bg-white rounded-md shadow-md">
-    //     <h2 className="text-2xl font-semibold mb-4 text-center">Login</h2>
-    //     <form onSubmit={handleSubmit}>
-    //       <div className="mb-4">
-    //         <label htmlFor="email" className="block text-gray-600 text-sm font-medium">
-    //           Email
-    //         </label>
-    //         <input
-    //           type="email"
-    //           id="email"
-    //           name="email"
-    //           value={formData.email}
-    //           onChange={handleChange}
-    //           className="mt-1 p-2 w-full border rounded-md focus:outline-blue-600"
-    //           required
-    //         />
-    //       </div>
-
-    //       <div className="mb-4">
-    //         <label htmlFor="password" className="block text-gray-600 text-sm font-medium">
-    //           Password
-    //         </label>
-    //         <input
-    //           type="password"
-    //           id="password"
-    //           name="password"
-    //           value={formData.password}
-    //           onChange={handleChange}
-    //           className="mt-1 p-2 w-full border rounded-md focus:outline-blue-600"
-    //           required
-    //         />
-    //       </div>
-
-    //       <button
-    //         type="submit"
-    //         className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-    //       >
-    //         Login
-    //       </button>
-    //       <span className=" px-2 ml-[3.5rem] text-gray-600  font-medium text-sm ">
-    //         Don't have an account ?{" "}
-    //         <Link to="/signup" className="text-blue-500 hover:underline ">
-    //           SignUp here
-    //         </Link>{" "}
-    //       </span>
-    //     </form>
-    //     <div className=" flex place-content-center my-1">
-    //       <hr className="  my-2 w-56     " />
-    //     </div>
-
-    //     <span className="flex place-content-center text-sm text-blue-400"> or </span>
-    //     <GoogleSignin />
-    //   </div>
-    // </div>
     <div className="w-full  relative [background:linear-gradient(90deg,_#00b4db,_#0083b0)] md:p-3 overflow-hidden  text-[0.88rem] text-steelblue font-gilroy">
       <img
         className="absolute top-[0rem] left-[-6.9rem]  h-[37.92rem] object-cover "
@@ -146,7 +96,7 @@ const Login = () => {
                 />
               </div>
 
-              <div className=" *:rounded-2xl">
+              <div className="relative *:rounded-2xl">
                 <label
                   htmlFor="password"
                   className="block text-gray-600 text-sm font-medium"
@@ -154,7 +104,7 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
@@ -162,6 +112,14 @@ const Login = () => {
                   className="mt-1 p-2 w-full border  focus:outline-blue-600"
                   required
                 />
+                <span
+                  className={`absolute inset-y-11 right-0 flex items-center pr-6 cursor-pointer ${
+                    showPassword ? "text-sky-700" : "text-slate-700"
+                  }`}
+                  onClick={togglePasswordVisibility}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+                </span>
               </div>
               <div className="my-3 ">forget Password? </div>
 
