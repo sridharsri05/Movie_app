@@ -1,36 +1,9 @@
-// import { createSlice } from "@reduxjs/toolkit";
 
-// const initialState = {
-//   movieDetails: [],
-// };
-
-// const movieDetailsSlice = createSlice({
-//   name: "movie",
-//   initialState,
-//   reducers: {
-//     setMovieDetails: (state, action) => {
-//       // Filter out duplicates based on IMDb ID
-//       const uniqueMovieDetails = action.payload.filter(
-//         (newMovie) =>
-//           !state.movieDetails.some(
-//             (existingMovie) => existingMovie.imdbID === newMovie.imdbID
-//           )
-//       );
-
-//       // Concatenate unique movie details with existing ones
-//       state.movieDetails = [...state.movieDetails, ...uniqueMovieDetails];
-//     },
-//   },
-// });
-
-// export const { setMovieDetails } = movieDetailsSlice.actions;
-
-// export const allDetails = (state) => state.movie.movieDetails;
-// export default movieDetailsSlice.reducer;
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   movieDetails: [],
+  currentPage: 1,
 };
 
 const movieDetailsSlice = createSlice({
@@ -49,10 +22,13 @@ const movieDetailsSlice = createSlice({
       // Update movieDetails by adding only unique new movie details
       state.movieDetails = [...state.movieDetails, ...filteredNewMovieDetails];
     },
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
   },
 });
 
-export const { setMovieDetails } = movieDetailsSlice.actions;
-
+export const { setMovieDetails,setCurrentPage } = movieDetailsSlice.actions;
+export const currentPageSelector = (state) => state.movie.currentPage;
 export const allDetails = (state) => state.movie.movieDetails;
 export default movieDetailsSlice.reducer;

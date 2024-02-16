@@ -1,29 +1,31 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login, setLoading } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleSignin from "../utils/GoogleSignin";
-import svg1 from "../../public/avatar-makata-vespa-04-2@2x.png";
-import svg2 from "../../public/avatar-makata-vespa-04-1@2x.png";
-import svg3 from "../../public/akariconsgithubfill.svg";
-import fbsvg from "../../public/bifacebook.svg";
+import svg1 from "/avatar-makata-vespa-04-2@2x.png";
+import svg2 from "/avatar-makata-vespa-04-1@2x.png";
+import svg3 from "/akariconsgithubfill.svg";
+import fbsvg from "/bifacebook.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-
+import Spinner from "../Spinner/Spinner";
+import { motion } from "framer-motion";
 
 const Login = () => {
+  const { isLoading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-const togglePasswordVisibility = () => {
-  setShowPassword(!showPassword);
-};
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -53,7 +55,7 @@ const togglePasswordVisibility = () => {
       } else {
         const { error } = response.payload;
         dispatch(setLoading(false));
-        toast.error(error.message || error, {
+        toast.error(error || error?.message, {
           position: "top-right",
           autoClose: 2000,
         });
@@ -70,6 +72,7 @@ const togglePasswordVisibility = () => {
         alt=""
         src={svg1}
       />
+
       <div className="min-h-screen flex justify-center items-center  ">
         <div className=" border  mx-auto bg-[#ffffff]  h-[28rem]  rounded-2xl z-[222]  shadow-2xl ">
           <div className=" flex  relative  ">
@@ -121,7 +124,7 @@ const togglePasswordVisibility = () => {
                   <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </span>
               </div>
-              <div className="my-3 ">forget Password? </div>
+              <div className="my-3 "> forget Password? </div>
 
               <button
                 type="submit"
@@ -158,6 +161,7 @@ const togglePasswordVisibility = () => {
 
             <div className="bg-[#E2EEF5] h-[28rem] w-[20rem] rounded-2xl ml-[6rem] hidden sm:block z-[-2]"></div>
           </div>
+          {isLoading && <Spinner />}
         </div>
       </div>
     </div>

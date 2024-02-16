@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setLoading, signUp } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -10,11 +10,12 @@ import svg3 from "../../public/akariconsgithubfill.svg";
 import fbsvg from "../../public/bifacebook.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import Spinner from "../Spinner/Spinner";
 
 const SignUp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const { isLoading } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -52,13 +53,22 @@ const SignUp = () => {
       })
       .catch((error) => {
         dispatch(setLoading(false));
-
-        toast.error(error.error.message, {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        // Handle registration failure
-        console.error("Registration failed:", error.error.message);
+        console.log(error, "error");
+        if (error) {
+          // CORS error
+          toast.error(error.error, {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          console.error("CORS policy error: Request blocked by server");
+        } else {
+          // Other errors
+          toast.error(error.error.message ? error.error.message : error, {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          console.error("Registration failed:", error.error.message);
+        }
       });
   };
 
@@ -129,7 +139,9 @@ const SignUp = () => {
                   required
                 />
                 <span
-                  className={`absolute inset-y-11 right-0 flex items-center pr-6 cursor-pointer ${showPassword?"text-sky-700":"text-slate-700"}`}
+                  className={`absolute inset-y-11 right-0 flex items-center pr-6 cursor-pointer ${
+                    showPassword ? "text-sky-700" : "text-slate-700"
+                  }`}
                   onClick={togglePasswordVisibility}
                 >
                   <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
@@ -171,6 +183,7 @@ const SignUp = () => {
 
             <div className="bg-[#E2EEF5] h-[29rem] w-[20rem] rounded-2xl ml-[6rem] hidden sm:block z-[-2]"></div>
           </div>
+          {isLoading && <Spinner />}
         </div>
       </div>
     </div>

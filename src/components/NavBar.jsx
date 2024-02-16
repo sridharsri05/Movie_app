@@ -1,5 +1,5 @@
 // NavBar.js
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
@@ -13,10 +13,27 @@ const NavBar = ({ image = true }) => {
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   const location = useLocation();
   const { user } = useSelector(selectAuth);
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   useEffect(() => {
     setIsMovieLinkClicked(false);
   }, [location]);
@@ -38,6 +55,9 @@ const NavBar = ({ image = true }) => {
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
+  };
+  const toggleOffCanvas = () => {
+    setIsOffCanvasOpen(!isOffCanvasOpen);
   };
 
   const handleMovieLinkClick = () => {
@@ -71,9 +91,12 @@ const NavBar = ({ image = true }) => {
   return (
     <>
       <nav className="p-4 bg-gray-800 border-b-2 border-gray-900 ">
-        <div className="container flex items-center justify-between mx-auto">
-          {/* Mobile Menu Icon */}
-          <button className="text-white lg:hidden focus:outline-none">
+        <div className="container flex items-center justify-between 3xl:justify-around mx-auto">
+          {/* offCanvas trigger Menu Icon */}
+          <button
+            onClick={toggleOffCanvas}
+            className="text-white lg:hidden focus:outline-none"
+          >
             <FontAwesomeIcon className="fa-solid" icon={faBarsStaggered} />
           </button>
 
@@ -84,21 +107,49 @@ const NavBar = ({ image = true }) => {
           >
             MovieHub
           </Link>
-
+          {isOffCanvasOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-50 bg-black bg-opacity-50"
+                onClick={toggleOffCanvas}
+              ></div>
+              <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition duration-300 ease-in-out ">
+                {/* Off-canvas menu content goes here */}
+                <div className=" flex  flex-col justify-center items-center min-h-screen ">
+                  <Link to="/dashboard" className="text-white hover:text-gray-300">
+                    Home
+                  </Link>
+                  <Link
+                    to="/dashboard/dropdown1"
+                    className="text-white hover:text-gray-300"
+                  >
+                    TV Shows
+                  </Link>
+                  <Link
+                    to="/dashboard/dropdown2"
+                    className="text-white hover:text-gray-300"
+                  >
+                    Trending
+                  </Link>
+                </div>
+              </div>
+            </>
+          )}
           {/* Navigation Links */}
-          <div className="hidden lg:flex space-x-4 ml-[28rem]">
+          <div className="hidden lg:flex gap-3 md:ml-[28rem] ">
             <Link to="/dashboard" className="text-white hover:text-gray-300">
               Home
             </Link>
             <Link to="/dashboard/dropdown1" className="text-white hover:text-gray-300">
-              Dropdown 1
+              TV Shows
             </Link>
             <Link to="/dashboard/dropdown2" className="text-white hover:text-gray-300">
-              Dropdown 2
+              Trending
             </Link>
           </div>
+
           {/* User Profile */}
-          <div className="items-center hidden space-x-4 lg:flex">
+          <div ref={dropdownRef} className="items-center hidden space-x-4 lg:flex">
             <div className="relative inline-block text-left">
               <button
                 type="button"
@@ -228,7 +279,7 @@ const NavBar = ({ image = true }) => {
                   </div>
                   <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
                     {movies.Title}{" "}
-                    <span className="ml-1 text-[12px]">( {movies.Year} )</span>{" "}
+                    <span className="ml-1 text-[12px]">( {movies.Year} )</span>
                     <span className="float-end">⭐ {movies.imdbRating}</span>
                   </div>
                   <p className="font-mono text-sm font-thin text-white text-wrap text-ellipsis">

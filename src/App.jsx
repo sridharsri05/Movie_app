@@ -9,12 +9,13 @@ import Profile from "./components/Profile/Profile";
 import PlayMovie from "./components/playmovie/PlayMovie";
 
 import DashboardLayout from "./components/Layout/DashboardLayout";
+import Spinner from "./Spinner/Spinner";
 
 function App() {
   const { isAuthReady } = useAuthInitialization();
 
   if (!isAuthReady) {
-    return <div>Loading...</div>;
+    return <Spinner />;
   }
   return (
     <BrowserRouter>

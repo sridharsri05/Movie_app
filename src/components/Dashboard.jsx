@@ -1,25 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import MovieCards from "./Cards/MovieCards";
 import useGreeting from "../Hooks/useGreeting";
-import { allDetails, setMovieDetails } from "../Redux/movieDetailsSlice";
+import {
+  allDetails,
+  currentPageSelector,
+  setMovieDetails,
+  setCurrentPage,
+} from "../Redux/movieDetailsSlice";
 import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
 import { useGetNewlyAddedMovies2Query } from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
+import Spinner from "../Spinner/Spinner";
+import { Spin } from "antd";
 
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
   const { greeting, showGreeting } = useGreeting();
   const { user } = useSelector(selectAuth);
-  const [currentPage, setCurrentPage] = useState(1);
+  const currentPage = useSelector(currentPageSelector);
   const dispatch = useDispatch();
-
+  const [loading, setLoading] = useState(true);
   const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
   console.log(data, "de");
+  console.log(isLoading, "de");
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -44,6 +52,7 @@ const Dashboard = () => {
 
           console.log("Movie List:", movieList); // Log the flattened movieList
           dispatch(setMovieDetails(movieList));
+          setLoading(false);
         } catch (error) {
           toast.error(error, {
             position: "top-right",
@@ -59,9 +68,9 @@ const Dashboard = () => {
 
   const MovieCardsMemoized = React.memo(MovieCards);
   let skeletonCards = [];
-  if (isLoading) {
+  if (loading || isLoading) {
     // Render a fixed number of skeleton cards (e.g., 10)
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 15; i++) {
       skeletonCards.push(<MovieCardSkeleton key={i} />);
     }
   }
@@ -117,14 +126,19 @@ const Dashboard = () => {
 
       <div className="p-4 bg-gray-800 ">
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
-          🔥Latest Added
+          🔥New Releases
         </header>
 
         <InfiniteScroll
+          style={{ overflow: "hidden" }}
           dataLength={movies.length} //This is important field to render the next data
-          next={() => setCurrentPage((prevPage) => prevPage + 1)} // Load next page data
+          next={() => dispatch(setCurrentPage(currentPage + 1))}
           hasMore={true} // Set to true to enable infinite scroll
-          loader={<h4>Loading...</h4>}
+          loader={
+            <div className=" flex justify-center items-center ">
+              <Spin size="large " /> <p className=" mx-2 text-slate-50">Loading ...</p>
+            </div>
+          }
           endMessage={
             <p className="text-center ">
               <b>Yay! You have seen it all</b>
@@ -132,12 +146,12 @@ const Dashboard = () => {
           }
         >
           <motion.section
-            className="grid s:grid-cols-1 m:grid-cols-2 gap-4 s:px-2 m:px-1 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 "
+            className="grid s:grid-cols-1 m:grid-cols-2 gap-4 s:px-2 m:px-1 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 3xl:grid-cols-6 "
             initial="hidden"
             animate="visible"
             variants={container}
           >
-            {isLoading ? skeletonCards : movies}
+            {loading || isLoading ? skeletonCards : movies}
           </motion.section>
         </InfiniteScroll>
       </div>
@@ -156,3 +170,4 @@ const container = {
   },
 };
 export default Dashboard;
+
