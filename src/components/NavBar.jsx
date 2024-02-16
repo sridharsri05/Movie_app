@@ -56,6 +56,7 @@ const NavBar = ({ image = true }) => {
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
   };
+
   const toggleOffCanvas = () => {
     setIsOffCanvasOpen(!isOffCanvasOpen);
   };
@@ -83,11 +84,13 @@ const NavBar = ({ image = true }) => {
       console.error("Error handling search:", error);
     }
   };
+
   const handleSignOut = () => {
     // Dispatch the logout action
     dispatch(logout());
     // You can also add other logic here, such as redirecting the user to the login page
   };
+  
   return (
     <>
       <nav className="p-4 bg-gray-800 border-b-2 border-gray-900 ">
@@ -112,25 +115,26 @@ const NavBar = ({ image = true }) => {
               <div
                 className="fixed inset-0 z-50 bg-black bg-opacity-50"
                 onClick={toggleOffCanvas}
-              ></div>
-              <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition duration-300 ease-in-out ">
-                {/* Off-canvas menu content goes here */}
-                <div className=" flex  flex-col justify-center items-center min-h-screen ">
-                  <Link to="/dashboard" className="text-white hover:text-gray-300">
-                    Home
-                  </Link>
-                  <Link
-                    to="/dashboard/dropdown1"
-                    className="text-white hover:text-gray-300"
-                  >
-                    TV Shows
-                  </Link>
-                  <Link
-                    to="/dashboard/dropdown2"
-                    className="text-white hover:text-gray-300"
-                  >
-                    Trending
-                  </Link>
+              >
+                <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition duration-300 ease-in-out ">
+                  {/* Off-canvas menu content goes here */}
+                  <div className=" flex  flex-col justify-center items-center min-h-screen ">
+                    <Link to="/dashboard" className="text-white hover:text-gray-300">
+                      Home
+                    </Link>
+                    <Link
+                      to="/dashboard/dropdown1"
+                      className="text-white hover:text-gray-300"
+                    >
+                      TV Shows
+                    </Link>
+                    <Link
+                      to="/dashboard/dropdown2"
+                      className="text-white hover:text-gray-300"
+                    >
+                      Trending
+                    </Link>
+                  </div>
                 </div>
               </div>
             </>

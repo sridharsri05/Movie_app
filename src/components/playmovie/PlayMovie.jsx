@@ -12,7 +12,7 @@ const PlayMovie = () => {
   return (
     <>
       <div className="pt-6 bg-black ">
-        <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 mb-8 sm:h-[31rem] ">
+        <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16    3xl:h-[40rem] mb-8 sm:h-[31rem] ">
           <iframe
             className="w-full h-full rounded-2xl"
             src={`https://vidsrc.to/embed/movie/${imdbID}`}
@@ -22,15 +22,15 @@ const PlayMovie = () => {
 
         {/* leftside card */}
 
-        <div className="relative ">
-          <div className="mx-auto max-w-[1920px] relative w-full">
-            <div className="flex flex-wrap mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-16">
-              <div className="flex-grow-0 flex-shrink-0 sm:basis-full md:basis-1/4 max-w-full min-h-[1px] px-1 relative w-full  sm:w-1/2 md:w-1/3 lg:w-1/4">
-                <div className="mb-8 sticky z-10 w-full sm:mx-[-24px]">
-                  <div className="relative flex w-full overflow-hidden rounded-l rounded-r ">
-                    <div className="flex-1 h-0 py-[71.75%] px-0 relative transition-transform duration-300 ease w-full">
+        <div className="relative  ">
+          <div className="mx-auto max-w-[2560px] relative w-full  ">
+            <div className="flex flex-wrap mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-16 ">
+              <div className="  flex-grow-0 flex-shrink-0 sm:basis-full md:basis-1/4 max-w-full min-h-[1px] px-1 relative w-full  sm:w-1/2 md:w-1/3 lg:w-1/4">
+                <div className=" mb-1 md:mb-8 sticky z-10 w-full sm:mx-[-24px]">
+                  <div className="relative flex w-full  ">
+                    <div className="flex-1  l:pb-[20rem]  md:py-[71.75%] px-0 relative  w-full">
                       <img
-                        className="box-border absolute top-0 left-0 object-cover w-full s:h-[20rem] md:h-full border-none"
+                        className="  absolute top-0 left-0 object-cover l:object-contain w-full s:h-[20rem]  md:h-full"
                         src={data?.Poster}
                         alt={data?.Title}
                       />
@@ -41,7 +41,7 @@ const PlayMovie = () => {
 
               {/* rightside part */}
               <div className="lg:flex-grow-0 flex-shrink-0 sm:basis-full md:basis-3/4 max-w-full sm:w-full md:w-2/3 lg:w-3/4">
-                <div className="text-white text-5xl font-extrabold leading-[56px] mt-0 mr-o mb-2 font-libre">
+                <div className="text-white text-5xl font-extrabold leading-[56px] mt-0 mr-o mb-2 font-libre ">
                   {data?.Title}
                 </div>
 

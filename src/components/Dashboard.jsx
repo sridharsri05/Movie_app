@@ -15,7 +15,6 @@ import { useGetNewlyAddedMovies2Query } from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
-import Spinner from "../Spinner/Spinner";
 import { Spin } from "antd";
 
 const Dashboard = () => {
@@ -23,6 +22,7 @@ const Dashboard = () => {
   const { greeting, showGreeting } = useGreeting();
   const { user } = useSelector(selectAuth);
   const currentPage = useSelector(currentPageSelector);
+  const [showMore, setShowMore] = useState(false);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
@@ -65,6 +65,9 @@ const Dashboard = () => {
 
     fetchMovieDetails();
   }, [currentPage, data, dispatch]);
+  const handleViewMore = () => {
+    setShowMore(true); // Show more items when "View More" button is clicked
+  };
 
   const MovieCardsMemoized = React.memo(MovieCards);
   let skeletonCards = [];
@@ -133,16 +136,18 @@ const Dashboard = () => {
           style={{ overflow: "hidden" }}
           dataLength={movies.length} //This is important field to render the next data
           next={() => dispatch(setCurrentPage(currentPage + 1))}
-          hasMore={true} // Set to true to enable infinite scroll
+          hasMore={showMore} // Set to true to enable infinite scroll
           loader={
             <div className=" flex justify-center items-center ">
               <Spin size="large " /> <p className=" mx-2 text-slate-50">Loading ...</p>
             </div>
           }
           endMessage={
-            <p className="text-center ">
-              <b>Yay! You have seen it all</b>
-            </p>
+            showMore && (
+              <p className="text-center ">
+                <b>Yay! You have seen it all</b>
+              </p>
+            )
           }
         >
           <motion.section
@@ -153,8 +158,19 @@ const Dashboard = () => {
           >
             {loading || isLoading ? skeletonCards : movies}
           </motion.section>
+          {!showMore && (
+            <div className="text-center my-2">
+              <button
+                onClick={handleViewMore}
+                className="   hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"
+              >
+                View More
+              </button>
+            </div>
+          )}
         </InfiniteScroll>
       </div>
+      <hr className=" text-slate-900" />
     </div>
   );
 };
@@ -170,4 +186,3 @@ const container = {
   },
 };
 export default Dashboard;
-
