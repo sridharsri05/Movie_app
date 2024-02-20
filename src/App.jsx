@@ -10,6 +10,7 @@ import PlayMovie from "./components/playmovie/PlayMovie";
 
 import DashboardLayout from "./components/Layout/DashboardLayout";
 import Spinner from "./Spinner/Spinner";
+import { TvShows } from "./components/recentlyadded/TvShows";
 
 function App() {
   const { isAuthReady } = useAuthInitialization();
@@ -28,6 +29,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="tvShows" element={<TvShows />} />
             <Route path="movie/:imdbID" element={<PlayMovie />} />
           </Route>
         </Route>

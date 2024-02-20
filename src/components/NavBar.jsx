@@ -90,7 +90,7 @@ const NavBar = ({ image = true }) => {
     dispatch(logout());
     // You can also add other logic here, such as redirecting the user to the login page
   };
-  
+
   return (
     <>
       <nav className="p-4 bg-gray-800 border-b-2 border-gray-900 ">
@@ -123,7 +123,7 @@ const NavBar = ({ image = true }) => {
                       Home
                     </Link>
                     <Link
-                      to="/dashboard/dropdown1"
+                      to="/dashboard/tvShows/"
                       className="text-white hover:text-gray-300"
                     >
                       TV Shows
@@ -144,7 +144,7 @@ const NavBar = ({ image = true }) => {
             <Link to="/dashboard" className="text-white hover:text-gray-300">
               Home
             </Link>
-            <Link to="/dashboard/dropdown1" className="text-white hover:text-gray-300">
+            <Link to="/dashboard/tvshows" className="text-white hover:text-gray-300">
               TV Shows
             </Link>
             <Link to="/dashboard/dropdown2" className="text-white hover:text-gray-300">

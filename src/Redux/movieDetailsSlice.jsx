@@ -1,9 +1,12 @@
-
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   movieDetails: [],
+  movieRecents: [],
+  TvNew: [],
+  TvRecents: [],
   currentPage: 1,
+  page: 1,
 };
 
 const movieDetailsSlice = createSlice({
@@ -25,10 +28,28 @@ const movieDetailsSlice = createSlice({
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
     },
+
+    setMovieRecents: (state, action) => {
+      const newMovieRecents = action.payload;
+      const uniqueNewMovieIds = new Set(state.movieRecents.map((m) => m.imdbID));
+      const filteredNewMovieRecents = newMovieRecents.filter(
+        (n) => !uniqueNewMovieIds.has(n.imdbID)
+      );
+
+      state.movieRecents = [...state.movieRecents, ...filteredNewMovieRecents];
+    },
+    setPage: (state, action) => {
+      state.page = action.payload;
+    },
   },
 });
 
-export const { setMovieDetails,setCurrentPage } = movieDetailsSlice.actions;
+export const { setMovieDetails, setCurrentPage, setMovieRecents, setPage } =
+  movieDetailsSlice.actions;
 export const currentPageSelector = (state) => state.movie.currentPage;
+
 export const allDetails = (state) => state.movie.movieDetails;
+export const recentDetails = (state) => state.movie.movieRecents;
+
+
 export default movieDetailsSlice.reducer;

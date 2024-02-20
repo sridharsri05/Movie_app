@@ -3,7 +3,7 @@ import moment from "moment-timezone";
 
 const useGreeting = () => {
   const [greeting, setGreeting] = useState("");
-  const [showGreeting, setShowGreeting] = useState(true);
+  const [showGreeting, setShowGreeting] = useState(false); // Initially set to false
 
   const getTimeOfDay = () => {
     const userTimeZone = moment.tz.guess();
@@ -17,12 +17,20 @@ const useGreeting = () => {
     } else if (currentHour >= 18 && currentHour < 24) {
       setGreeting("Good evening 🌙");
     } else {
-      setGreeting("Good night 🌚 ");
+      setGreeting("Good night 🌚");
     }
   };
 
   useEffect(() => {
     getTimeOfDay(); // Initial greeting on component mount
+
+    const isLoggedInPreviously = sessionStorage.getItem("isLoggedIn");
+
+    // If not logged in previously, set the flag to true and show the greeting
+    if (!isLoggedInPreviously) {
+      setShowGreeting(true);
+      sessionStorage.setItem("isLoggedIn", "true");
+    }
 
     // Update the greeting every minute (adjust as needed)
     const interval = setInterval(getTimeOfDay, 60000);

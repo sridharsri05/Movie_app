@@ -1,8 +1,10 @@
 import { useParams } from "react-router-dom";
 import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
 import MovieCard from "../Cards/MovieCards";
+import { useState } from "react";
 
 const PlayMovie = () => {
+  const [movieview, setMovieView] = useState(true);
   const { imdbID } = useParams();
   console.log(imdbID);
 
@@ -13,14 +15,31 @@ const PlayMovie = () => {
     <>
       <div className="pt-6 bg-black ">
         <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16    3xl:h-[40rem] mb-8 sm:h-[31rem] ">
-          <iframe
-            className="w-full h-full rounded-2xl"
-            src={`https://vidsrc.to/embed/movie/${imdbID}`}
-            allowFullScreen
-          ></iframe>
+          {movieview ? (
+            <iframe
+              className="w-full h-full rounded-2xl"
+              src={`https://vidsrc.to/embed/movie/${imdbID}`}
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <iframe
+              className="w-full h-full rounded-2xl"
+              src={`https://vidsrc.xyz/embed/movie/${imdbID}`}
+              allowFullScreen
+            ></iframe>
+          )}
         </div>
 
         {/* leftside card */}
+        <div className=" flex justify-center mb-5">
+          <button
+            type="button"
+            className="md:right-14 md:absolute l:mx-5  z-50 px-6 py-3 bg-blue-600 hover:bg-blue-700 hover:text-blue-400 md:px-2 md:py-2  text-white font-semibold rounded-md shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            onClick={() => setMovieView((prev) => !prev)}
+          >
+            Change Server
+          </button>
+        </div>
 
         <div className="relative  ">
           <div className="mx-auto max-w-[2560px] relative w-full  ">
@@ -30,7 +49,7 @@ const PlayMovie = () => {
                   <div className="relative flex w-full  ">
                     <div className="flex-1  l:pb-[20rem]  md:py-[71.75%] px-0 relative  w-full">
                       <img
-                        className="  absolute top-0 left-0 object-cover l:object-contain w-full s:h-[20rem]  md:h-full"
+                        className="  absolute s:relative l:absolute  s:mt-2 top-0 left-0 object-cover  w-full s:h-[20rem]  md:h-full"
                         src={data?.Poster}
                         alt={data?.Title}
                       />
@@ -40,7 +59,7 @@ const PlayMovie = () => {
               </div>
 
               {/* rightside part */}
-              <div className="lg:flex-grow-0 flex-shrink-0 sm:basis-full md:basis-3/4 max-w-full sm:w-full md:w-2/3 lg:w-3/4">
+              <div className="lg:flex-grow-0 flex-shrink-0 sm:basis-full md:basis-3/4 max-w-full sm:w-full md:w-2/3 lg:w-3/4  l:mt-4">
                 <div className="text-white text-5xl font-extrabold leading-[56px] mt-0 mr-o mb-2 font-libre ">
                   {data?.Title}
                 </div>
