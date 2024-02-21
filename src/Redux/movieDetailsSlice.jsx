@@ -38,18 +38,27 @@ const movieDetailsSlice = createSlice({
 
       state.movieRecents = [...state.movieRecents, ...filteredNewMovieRecents];
     },
+    setTvshows: (state, action) => {
+      const newMovieRecents = action.payload;
+      const uniqueNewMovieIds = new Set(state.TvNew.map((m) => m.imdbID));
+      const filteredNewMovieRecents = newMovieRecents.filter(
+        (n) => !uniqueNewMovieIds.has(n.imdbID)
+      );
+
+      state.TvNew = [...state.TvNew, ...filteredNewMovieRecents];
+    },
     setPage: (state, action) => {
       state.page = action.payload;
     },
   },
 });
 
-export const { setMovieDetails, setCurrentPage, setMovieRecents, setPage } =
+export const { setMovieDetails, setCurrentPage, setMovieRecents, setPage, setTvshows } =
   movieDetailsSlice.actions;
 export const currentPageSelector = (state) => state.movie.currentPage;
 
 export const allDetails = (state) => state.movie.movieDetails;
+export const allShows = (state) => state.movie.TvNew;
 export const recentDetails = (state) => state.movie.movieRecents;
-
 
 export default movieDetailsSlice.reducer;
