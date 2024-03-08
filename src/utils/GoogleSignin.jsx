@@ -12,8 +12,8 @@ const GoogleSignin = () => {
   const navigate = useNavigate();
 
   const googleSignin = async () => {
+    dispatch(setLoading(true));
     try {
-      dispatch(setLoading(true));
       const Provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const res = await signInWithPopup(auth, Provider);

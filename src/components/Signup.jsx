@@ -11,6 +11,7 @@ import fbsvg from "../../public/bifacebook.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../Spinner/Spinner";
+import { motion } from "framer-motion";
 
 const SignUp = () => {
   const dispatch = useDispatch();
@@ -73,20 +74,44 @@ const SignUp = () => {
   };
 
   return (
-    <div className="w-full  relative [background:linear-gradient(90deg,_#00b4db,_#0083b0)] md:p-3 overflow-hidden  text-[0.88rem] text-steelblue font-gilroy">
+    <motion.div
+      className="w-full  relative [background:linear-gradient(90deg,_#00b4db,_#0083b0)] md:p-3 overflow-hidden  text-[0.88rem] text-steelblue font-gilroy"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
       <img
         className="absolute top-[0rem] left-[-6.9rem]  h-[37.92rem] object-cover "
         alt=""
         src={svg1}
       />
-      <div className="min-h-screen flex justify-center items-center  ">
-        <div className=" border  mx-auto bg-[#ffffff]  h-[29rem]  rounded-2xl z-[222]  shadow-2xl ">
-          <div className=" flex  relative  ">
+      <motion.div
+        className="min-h-screen flex justify-center items-center  "
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { delay: 0.5 } }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          className=" border  mx-auto bg-[#ffffff]  h-[29rem]  rounded-2xl z-[222]  shadow-2xl "
+          initial={{ y: "-100vh" }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 120 }}
+        >
+          <motion.div
+            className=" flex  relative  "
+            initial={{ x: "-100vw" }}
+            animate={{ x: 0 }}
+            transition={{ type: "spring", stiffness: 120 }}
+          >
             <form onSubmit={handleSubmit} className="flex flex-col justify-center p-6   ">
-              {/* <div>
-                <img src={Logo} alt="Logo" />
-              </div> */}
-              <div className=" text-3xl my-1 font-gilroy font-medium ">SignUp</div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className=" text-3xl my-1 font-gilroy font-medium "
+              >
+                SignUp
+              </motion.div>
               <div className="mb-3 *:rounded-2xl">
                 <label
                   htmlFor="username"
@@ -182,11 +207,11 @@ const SignUp = () => {
             />
 
             <div className="bg-[#E2EEF5] h-[29rem] w-[20rem] rounded-2xl ml-[6rem] hidden sm:block z-[-2]"></div>
-          </div>
-          {isLoading && <Spinner />}
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+        {isLoading && <Spinner />}
+      </motion.div>
+    </motion.div>
   );
 };
 

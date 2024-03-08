@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
+import { motion } from "framer-motion";
 
 const NavBar = ({ image = true }) => {
   const [query, setQuery] = useState("");
@@ -19,7 +20,7 @@ const NavBar = ({ image = true }) => {
   const { user } = useSelector(selectAuth);
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
   const dropdownRef = useRef(null);
-
+  console.log(user);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -90,6 +91,10 @@ const NavBar = ({ image = true }) => {
     dispatch(logout());
     // You can also add other logic here, such as redirecting the user to the login page
   };
+  const menuVariants = {
+    open: { x: 0 },
+    closed: { x: "-100%" },
+  };
 
   return (
     <>
@@ -112,31 +117,70 @@ const NavBar = ({ image = true }) => {
           </Link>
           {isOffCanvasOpen && (
             <>
-              <div
+              <motion.div
                 className="fixed inset-0 z-50 bg-black bg-opacity-50"
                 onClick={toggleOffCanvas}
+                initial="closed"
+                animate="open"
+                exit="closed"
               >
-                <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition duration-300 ease-in-out ">
+                <motion.div
+                  className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 "
+                  variants={menuVariants}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  {/* Close icon */}
+                  <motion.div
+                    className="text-white hover:text-gray-300 py-2 px-4 font-libre cursor-pointer flex items-center justify-center"
+                    onClick={toggleOffCanvas}
+                    whileHover={{ scale: 1.1 }} // Add scale animation on hover
+                    whileTap={{ scale: 0.9 }} // Add scale animation on tap/click
+                  >
+                    <span className="text-xl">&times;</span>
+                  </motion.div>
+
                   {/* Off-canvas menu content goes here */}
-                  <div className=" flex  flex-col justify-center items-center min-h-screen ">
-                    <Link to="/dashboard" className="text-white hover:text-gray-300">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1, duration: 0.5, ease: "easeInOut" }}
+                  >
+                    <Link
+                      to="/dashboard"
+                      className="text-white hover:text-gray-300 py-2 px-4 font-libre block"
+                    >
                       Home
                     </Link>
                     <Link
                       to="/dashboard/tvShows/"
-                      className="text-white hover:text-gray-300"
+                      className="text-white hover:text-gray-300 py-2 px-4 font-libre block"
                     >
                       TV Shows
                     </Link>
                     <Link
                       to="/dashboard/dropdown2"
-                      className="text-white hover:text-gray-300"
+                      className="text-white hover:text-gray-300 py-2 px-4 font-libre block"
                     >
                       Trending
                     </Link>
-                  </div>
-                </div>
-              </div>
+                  </motion.div>
+
+                  <motion.div
+                    className="absolute bottom-0 left-0 right-0 flex justify-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5, ease: "easeInOut" }}
+                  >
+                    <button
+                      className="text-white hover:text-gray-300 py-2 px-4 font-libre"
+                      role="menuitem"
+                      onClick={handleSignOut}
+                    >
+                      Sign out
+                    </button>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
             </>
           )}
           {/* Navigation Links */}
@@ -147,7 +191,7 @@ const NavBar = ({ image = true }) => {
             <Link to="/dashboard/tvshows" className="text-white hover:text-gray-300">
               TV Shows
             </Link>
-            <Link to="/dashboard/dropdown2" className="text-white hover:text-gray-300">
+            <Link to="/dashboard" className="text-white hover:text-gray-300">
               Trending
             </Link>
           </div>
@@ -157,9 +201,8 @@ const NavBar = ({ image = true }) => {
             <div className="relative inline-block text-left">
               <button
                 type="button"
-                className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  ${
-                  isOpen ? "" : "hover:border-gray-400"
-                }  ${isOpen ? "focus:ring focus:ring-blue-700 " : ""}`}
+                className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  
+                  ${isOpen ? "focus:ring focus:ring-blue-700 " : ""}`}
                 onClick={toggleDropdown}
               >
                 {/* You may replace this with your Avatar component */}
@@ -183,51 +226,90 @@ const NavBar = ({ image = true }) => {
               </button>
 
               {isOpen && (
-                <div className="origin-top-right absolute z-50 right-0 mt-2  min-w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre">
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="origin-top-right absolute z-50 right-0 mt-2 min-w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre"
+                >
                   <div className="flex justify-evenly items-center realtive pt-1">
-                    <FontAwesomeIcon
-                      icon={faUser}
-                      className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
-                    />
-                    <div className=" text-black-800 ">
-                      <div className=" text-[1rem]  ">{user.username}</div>
-                      <ul className=" text-xs text-blue-500 font-libre">
+                    {" "}
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                    >
+                      <FontAwesomeIcon
+                        icon={faUser}
+                        className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
+                      />
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-black-800"
+                    >
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="text-[1rem]"
+                      >
+                        {user.username}
+                      </motion.div>
+                      <ul className="text-xs text-blue-500 font-libre">
                         <li>Free</li>
                         <li>online</li>
                       </ul>
-                    </div>
+                    </motion.div>
                   </div>
 
                   <hr className="mt-3" />
                   <div className="py-1 *:">
-                    <button
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                     >
-                      <Link to="/dashboard/profile"> Edit Profile</Link>
-                    </button>
-                    <button
+                      <Link to="/dashboard/profile">Edit Profile</Link>
+                    </motion.button>
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                     >
                       Settings
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                     >
                       Earnings
-                    </button>
+                    </motion.button>
                     <hr className="my-1" />
-                    <button
+                    <motion.button
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       className="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 hover:text-gray-900"
                       role="menuitem"
                       onClick={handleSignOut}
                     >
                       Sign out
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
