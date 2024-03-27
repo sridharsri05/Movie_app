@@ -49,6 +49,7 @@ const SignUp = () => {
             autoClose: 2000,
           });
           console.log("User successfully registered:", response.message);
+          dispatch(setLoading(false));
           navigate("/login");
         }
       })
