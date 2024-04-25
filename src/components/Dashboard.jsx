@@ -38,8 +38,8 @@ const Dashboard = () => {
   const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
   const { data: recent } = useGetRecentlyAddedMoviesQuery(page);
 
-  console.log(data, "de");
-  console.log(recent, "sri");
+  // console.log(data, "de");
+  // console.log(recent, "sri");
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -62,7 +62,7 @@ const Dashboard = () => {
             .flat() // Flatten the nested arrays
             .filter(Boolean);
 
-          console.log("Movie List:", movieList); // Log the flattened movieList
+          // console.log("Movie List:", movieList); // Log the flattened movieList
           dispatch(setMovieDetails(movieList));
           setLoading(false);
         } catch (error) {
@@ -77,8 +77,8 @@ const Dashboard = () => {
     const fetchAddedMovie = async () => {
       if (recent && recent.result && recent.result.items) {
         const imdbIds = recent.result.items.map((item) => item.imdb_id) || [];
-        console.log({ imdbIds });
-        console.log("page no :", currentPage);
+        // console.log({ imdbIds });
+        // console.log("page no :", currentPage);
 
         try {
           const responses = await axios.all(
@@ -94,7 +94,7 @@ const Dashboard = () => {
             .flat() // Flatten the nested arrays
             .filter(Boolean);
 
-          console.log("Movie new:", movieList); // Log the flattened movieList
+          // console.log("Movie new:", movieList); 
           dispatch(setMovieRecents(movieList));
           setLoading(false);
         } catch (error) {

@@ -44,6 +44,7 @@ const SignUp = () => {
         // Additional logic if needed, such as redirecting after successful sign-up
 
         if (response && response.status === "success") {
+          dispatch(setLoading(false));
           toast.success(response.message, {
             position: "top-right",
             autoClose: 2000,
@@ -57,7 +58,7 @@ const SignUp = () => {
         console.log(error, "error");
         if (error) {
           // CORS error
-          toast.error(error.error, {
+          toast.error(error?.error?.message, {
             position: "top-right",
             autoClose: 3000,
           });

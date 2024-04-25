@@ -18,13 +18,13 @@ const PlayMovie = () => {
           {movieview ? (
             <iframe
               className="w-full h-full rounded-2xl"
-              src={`https://vidsrc.to/embed/movie/${imdbID}`}
+              src={`https://vidsrc.xyz/embed/movie/${imdbID}`}
               allowFullScreen
             ></iframe>
           ) : (
             <iframe
               className="w-full h-full rounded-2xl"
-              src={`https://vidsrc.xyz/embed/movie/${imdbID}`}
+              src={`https://vidsrc.to/embed/movie/${imdbID}`}
               allowFullScreen
             ></iframe>
           )}

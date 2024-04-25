@@ -56,12 +56,20 @@ const Login = () => {
       } else {
         const { error } = response.payload;
         dispatch(setLoading(false));
-        toast.error(error || error?.message, {
-          position: "top-right",
-          autoClose: 2000,
-        });
+
+        if (error && error?.message) {
+          toast.error(error?.message, {
+            position: "top-right",
+            autoClose: 2000,
+          });
+        } else {
+          toast.error(error, {
+            position: "top-right",
+            autoClose: 2000,
+          });
+        }
         // Handle login failure
-        console.error("Login failed:", error);
+        console.error("Login failed: dedddd", error);
       }
     });
   };

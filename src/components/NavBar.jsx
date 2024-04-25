@@ -9,7 +9,7 @@ import { setSearchResults } from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
 import { motion } from "framer-motion";
 
-const NavBar = ({ image = true }) => {
+const NavBar = () => {
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ const NavBar = ({ image = true }) => {
   const { user } = useSelector(selectAuth);
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
   const dropdownRef = useRef(null);
-  console.log(user);
+  // console.log(user);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -113,7 +113,7 @@ const NavBar = ({ image = true }) => {
             to="/dashboard"
             className="mx-auto text-4xl font-bold text-white font-libre lg:mx-0"
           >
-            MovieHub
+            MovieNexus
           </Link>
           {isOffCanvasOpen && (
             <>
@@ -166,11 +166,17 @@ const NavBar = ({ image = true }) => {
                   </motion.div>
 
                   <motion.div
-                    className="absolute bottom-0 left-0 right-0 flex justify-center"
+                    className="absolute bottom-0 left-0 right-0 flex justify-center flex-col"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5, ease: "easeInOut" }}
                   >
+                    <Link
+                      to="/dashboard/profile"
+                      className="text-white hover:text-gray-300 py-2 px-4 font-libre block text-center text-lg"
+                    >
+                      Profile
+                    </Link>
                     <button
                       className="text-white hover:text-gray-300 py-2 px-4 font-libre"
                       role="menuitem"
@@ -207,12 +213,10 @@ const NavBar = ({ image = true }) => {
               >
                 {/* You may replace this with your Avatar component */}
                 <div className="flex items-center justify-center ">
-                  {image ? (
-                    <div className="  size-[3.5rem] ">
+                  {user?.profilePicture ? (
+                    <div className=" size-[3.5rem] ">
                       <img
-                        src={
-                          "https://imgs.search.brave.com/Untz9IPAq0oiUcfN8fk7HLba5S-y5zmEOXfDG5xp1zk/rs:fit:500:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudW5zcGxhc2gu/Y29tL3Bob3RvLTE0/NDQ3MDM2ODY5ODEt/YTNhYmJjNGQ0ZmUz/P3E9ODAmdz0xMDAw/JmF1dG89Zm9ybWF0/JmZpdD1jcm9wJml4/bGliPXJiLTQuMC4z/Jml4aWQ9TTN3eE1q/QTNmREI4TUh4elpX/RnlZMmg4T0h4OGNH/bGpkSFZ5Wlh4bGJu/d3dmSHd3Zkh4OE1B/PT0.jpeg"
-                        }
+                        src={user?.profilePicture}
                         className="object-cover w-full h-full text-3xl text-white border border-gray-800 rounded-full fa-duotone"
                       />
                     </div>
@@ -233,29 +237,36 @@ const NavBar = ({ image = true }) => {
                   transition={{ duration: 0.3 }}
                   className="origin-top-right absolute z-50 right-0 mt-2 min-w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre"
                 >
-                  <div className="flex justify-evenly items-center realtive pt-1">
+                  <div className="flex justify-evenly items-center relative pt-1">
                     {" "}
                     <motion.div
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
                     >
-                      <FontAwesomeIcon
-                        icon={faUser}
-                        className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
-                      />
+                      {user?.profilePicture ? (
+                        <img
+                          src={user.profilePicture}
+                          className=" object-cover rounded-full size-12 "
+                        />
+                      ) : (
+                        <FontAwesomeIcon
+                          icon={faUser}
+                          className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
+                        />
+                      )}
                     </motion.div>
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-black-800"
+                      className="text-black-800 "
                     >
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-[1rem]"
+                        className="text-[1rem] truncate max-w-[6rem]"
                       >
-                        {user.username}
+                        {user.username.slice(0, 10)}
                       </motion.div>
                       <ul className="text-xs text-blue-500 font-libre">
                         <li>Free</li>

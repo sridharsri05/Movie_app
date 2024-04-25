@@ -75,7 +75,7 @@ export const signUp = createAsyncThunk("auth/signUp", async (userData, thunkAPI)
     thunkAPI.dispatch(setLoading(true));
     const response = await axios.post("/signup", userData);
     console.log(response.data);
-    return response.data; // Assuming the backend returns user data upon successful registration
+    return response.data;
   } catch (error) {
     thunkAPI.dispatch(setLoading(false));
     return thunkAPI.rejectWithValue({
@@ -84,6 +84,80 @@ export const signUp = createAsyncThunk("auth/signUp", async (userData, thunkAPI)
   }
 });
 
+//  fetching user status
+export const fetchUserStatus = createAsyncThunk(
+  "auth/fetchUserStatus",
+  async (_, thunkAPI) => {
+    try {
+      const response = await axios.get("/userStatus");
+      return response.data;
+    } catch (error) {
+      // Handle errors and reject with value
+      return thunkAPI.rejectWithValue({
+        error: error.response ? error.response.data : error.message,
+      });
+    }
+  }
+);
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (userData, thunkAPI) => {
+    try {
+      const response = await axios.put(`/profile/${userData.userId}`, userData);
+
+      // Check if the response contains a new JWT token
+      const newToken = response.data.token;
+      if (newToken) {
+        // Replace the old JWT token in local storage with the new one
+        localStorage.setItem("authToken", newToken);
+      }
+
+      // Dispatch loginFulfilled action with updated user data
+      thunkAPI.dispatch(loginFulfilled({ user: response.data.user }));
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue({
+        error: error,
+      });
+    }
+  }
+);
+export const deleteUserAccount = createAsyncThunk(
+  "auth/deleteUserAccount",
+  async (userId, thunkAPI) => {
+    try {
+      // Dispatch setLoading action to indicate loading state
+      thunkAPI.dispatch(setLoading(true));
+
+      // Make the request to delete the user account
+      const response = await axios.delete(`/deleteUser/${userId}`);
+
+      // Remove the auth token from local storage upon successful account deletion
+      localStorage.removeItem("authToken");
+
+      // Dispatch logout action to clear user data and set isAuthenticated to false
+      thunkAPI.dispatch(logout());
+
+      // Dispatch setLoading action to indicate loading state
+      thunkAPI.dispatch(setLoading(false));
+
+      // Return the response data
+      return response.data;
+    } catch (error) {
+      // Log any errors
+      console.error("Error deleting user account:", error);
+
+      // Dispatch setLoading action to indicate loading state
+      thunkAPI.dispatch(setLoading(false));
+
+      // Handle errors and reject with value
+      return thunkAPI.rejectWithValue({
+        error: error.response ? error.response.data : error.message,
+      });
+    }
+  }
+);
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -92,6 +166,7 @@ const authSlice = createSlice({
     role: null,
     error: null,
     isLoading: false,
+    userStatus: null,
   },
   reducers: {
     loginFulfilled: (state, action) => {
@@ -112,6 +187,9 @@ const authSlice = createSlice({
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
+    },
+    updateUserStatus: (state, action) => {
+      state.userStatus = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -139,6 +217,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, loginFulfilled, setLoading } = authSlice.actions;
+export const { logout, loginFulfilled, setLoading, updateUserStatus } = authSlice.actions;
 export const selectAuth = (state) => state.auth;
 export default authSlice.reducer;
