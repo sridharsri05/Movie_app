@@ -16,8 +16,9 @@ const PlayMovie = () => {
     const minutes = min % 60;
     return `${hours}- ${minutes}`;
 }
-
-console.log(minTohours(data.Runtime))
+if (data){
+console.log(minTohours(data?.Runtime))
+}
 
   return (
     <>
@@ -76,7 +77,7 @@ console.log(minTohours(data.Runtime))
                   <div className="flex flex-wrap items-center gap-x-1">
                     <span className="mr-3 ">
                       {" "}
-                      {data?.Year} - {data?.Runtime}
+                      {data?.Year} - {minTohours(data?.Runtime)}
                     </span>
                     {/* svg */}
                     {/* Rating */}
