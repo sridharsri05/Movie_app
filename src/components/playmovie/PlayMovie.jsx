@@ -11,14 +11,6 @@ const PlayMovie = () => {
   const { data } = useSearchByidQuery(imdbID);
   console.log(data, "movie data");
 
-  function minTohours(min) {
-    const hours = Math.floor(min / 60);
-    const minutes = min % 60;
-    return `${hours}- ${minutes}`;
-}
-if (data){
-console.log(minTohours(data?.Runtime))
-}
 
   return (
     <>
@@ -77,7 +69,7 @@ console.log(minTohours(data?.Runtime))
                   <div className="flex flex-wrap items-center gap-x-1">
                     <span className="mr-3 ">
                       {" "}
-                      {data?.Year} - {minTohours(data?.Runtime)}
+                      {data?.Year} - {data?.Runtime}
                     </span>
                     {/* svg */}
                     {/* Rating */}
