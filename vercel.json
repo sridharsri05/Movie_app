@@ -22,11 +22,11 @@
       "dest": "/index.html"
     },
     {
-      "src": "/dashboard/?(.*)",  // Add optional trailing slash
+      "src": "/dashboard/?(.*)",
       "dest": "/index.html"
     },
     {
-      "src": "/admindashboard/?(.*)",  // Add optional trailing slash
+      "src": "/admindashboard/?(.*)", 
       "dest": "/index.html"
     }
   ]
