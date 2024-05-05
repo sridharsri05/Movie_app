@@ -11,6 +11,14 @@ const PlayMovie = () => {
   const { data } = useSearchByidQuery(imdbID);
   console.log(data, "movie data");
 
+  function minTohours(min) {
+    const hours = Math.floor(min / 60);
+    const minutes = min % 60;
+    return `${hours}- ${minutes}`;
+}
+
+console.log(minTohours(data.Runtime))
+
   return (
     <>
       <div className="pt-6 bg-black ">
