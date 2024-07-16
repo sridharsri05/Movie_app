@@ -20,6 +20,14 @@
     {
       "src": "/unauthorized",
       "dest": "/index.html"
+    },
+    {
+      "src": "/dashboard/?(.*)",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/admindashboard/?(.*)", 
+      "dest": "/index.html"
     }
   ]
 }
