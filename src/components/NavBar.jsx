@@ -1,6 +1,6 @@
 // NavBar.js
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +20,7 @@ const NavBar = () => {
   const { user } = useSelector(selectAuth);
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
   // console.log(user);
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,7 +41,6 @@ const NavBar = () => {
   }, [location]);
 
   useEffect(() => {
-    // Function to handle scroll event
     const handleScroll = () => {
       // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
       setIsScrolled(window.scrollY > 30);
@@ -53,6 +53,25 @@ const NavBar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+  const [visible, setVisible] = useState(true);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  useEffect(() => {
+    const handleVisibleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      setVisible(currentScrollPos < prevScrollPos || currentScrollPos < 30); // Update visibility based on scroll direction and position
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    // Attach the scroll event listener
+    window.addEventListener("scroll", handleVisibleScroll);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("scroll", handleVisibleScroll);
+    };
+  }, [prevScrollPos]);
+
+  const navbarHeight = visible ? 90 : 0;
 
   const toggleDropdown = () => {
     setIsOpen((prev) => !prev);
@@ -72,13 +91,14 @@ const NavBar = () => {
     try {
       const firstMovie = movies;
 
-      if (firstMovie) {
+      if (firstMovie && firstMovie.Response === "True") {
         // Fetch playable movie from vidsrcApi using titleId
         const titleId = firstMovie.imdbID;
         // You can perform additional logic or API calls here if needed
         console.log(titleId, "navbar");
         // Dispatch the setSearchResults action to update the search results in Redux store
-        dispatch(setSearchResults(movies || []));
+        dispatch(setSearchResults(firstMovie));
+        navigate("searchResults");
         setQuery("");
       }
     } catch (error) {
@@ -98,8 +118,14 @@ const NavBar = () => {
 
   return (
     <>
-      <nav className="p-4 bg-gray-800 border-b-2 border-gray-900 ">
-        <div className="container flex items-center justify-between 3xl:justify-around mx-auto">
+      <nav
+        className={`p-1 bg-gray-800 border-b-2 border-gray-900 ${
+          visible
+            ? "fixed top-0 left-0 w-full z-10 bg-gray-400 transition-all duration-1000 ease-in-out "
+            : "" // Hide the navbar when `visible` is false
+        }`}
+      >
+        <div className="container flex items-center justify-between 3xl:justify-around mx-auto ">
           {/* offCanvas trigger Menu Icon */}
           <button
             onClick={toggleOffCanvas}
@@ -328,7 +354,10 @@ const NavBar = () => {
       </nav>
 
       {/* Additional content or search functionality */}
-      <div className="flex items-center p-4 ml-auto space-x-4 bg-gray-800 place-content-center">
+      <div
+        style={{ paddingTop: navbarHeight }}
+        className="flex items-center p-4 ml-auto space-x-4 bg-gray-800 place-content-center"
+      >
         <div className="relative text-gray-600 focus-within:text-gray-400 w-[70rem]">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
             <FontAwesomeIcon icon={faSearch} className="text-lg" />

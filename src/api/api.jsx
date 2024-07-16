@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create an instance with a base URL
 const instance = axios.create({
-  baseURL: "https://server-coral-delta.vercel.app/",
+  baseURL: "https://server-mu-bice.vercel.app/",
 });
 
 export default instance;
@@ -15,5 +15,6 @@ export default instance;
 export const Apis = {
   OMBD_API: "https://www.omdbapi.com/",
   VIDSRC_API: "https://vidsrc.to",
-  baseURL: "https://server-coral-delta.vercel.app",
+  TMDB: "https://api.themoviedb.org",
+  baseURL: "https://server-mu-bice.vercel.app",
 };

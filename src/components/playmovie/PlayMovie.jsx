@@ -11,6 +11,15 @@ const PlayMovie = () => {
   const { data } = useSearchByidQuery(imdbID);
   console.log(data, "movie data");
 
+  function minsToHours(minutesString) {
+    const minutes = parseInt(minutesString);
+    if (minutes) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return `${hours}h ${remainingMinutes}m`;
+    }
+  }
+
   return (
     <>
       <div className="pt-6 bg-black ">
@@ -68,7 +77,7 @@ const PlayMovie = () => {
                   <div className="flex flex-wrap items-center gap-x-1">
                     <span className="mr-3 ">
                       {" "}
-                      {data?.Year} - {data?.Runtime}
+                      {data?.Year} - {minsToHours(data?.Runtime)}
                     </span>
                     {/* svg */}
                     {/* Rating */}
