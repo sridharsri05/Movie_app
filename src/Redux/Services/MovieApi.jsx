@@ -32,7 +32,6 @@ export const vidsrcApi = createApi({
     getNewlyAddedMovies: builder.query({
       query: (page) => `/vapi/movie/new/${page}`,
     }),
-   
   }),
 });
 
@@ -50,16 +49,16 @@ export const vidsrcApi2 = createApi({
     }),
 
     getNewlyAddedTvShows: builder.query({
-      query: (page) => `/api/vapi/tv/new/${page}`,
+      query: (page) => `/api/vapi/tv/add/${page}`,
     }),
   }),
 });
 
 // Extract hooks for using the API
+export const { useGetNewlyAddedMoviesQuery, useGetPlayableMovieQuery } = vidsrcApi;
 export const {
-  useGetNewlyAddedMoviesQuery,
-  useGetPlayableMovieQuery,
- 
-} = vidsrcApi;
-export const { useGetNewlyAddedMovies2Query , useGetRecentlyAddedMoviesQuery,useGetNewlyAddedTvShowsQuery} = vidsrcApi2;
+  useGetNewlyAddedMovies2Query,
+  useGetRecentlyAddedMoviesQuery,
+  useGetNewlyAddedTvShowsQuery,
+} = vidsrcApi2;
 export const { useSearchMoviesQuery, useSearchByidQuery } = omdbApi;
