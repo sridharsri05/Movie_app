@@ -111,7 +111,7 @@ export const TvShows = () => {
 
     fetchMovieDetails();
   }, [currentPage, data, dispatch, recent]);
-  const thresholdMovies = 0.5;
+  const thresholdMovies = 0.3;
   // const thresholdRecentMovies = 0.5;
   const handleViewMore = () => {
     setShowMore(true); // Show more items when "View More" button is clicked
