@@ -12,6 +12,8 @@ import DashboardLayout from "./components/Layout/DashboardLayout";
 import Spinner from "./Spinner/Spinner";
 import { TvShows } from "./components/recentlyadded/TvShows";
 import SearchResults from "./components/SearchResults";
+import PrivacyPolicy from "./components/Privacy/PrivacyPolicy";
+import Dmca from "./components/Privacy/Dmca";
 
 function App() {
   const { isAuthReady } = useAuthInitialization();
@@ -33,6 +35,8 @@ function App() {
             <Route path="tvShows" element={<TvShows />} />
             <Route path="movie/:imdbID" element={<PlayMovie />} />
             <Route path="searchResults" element={<SearchResults />} />
+            <Route path="PrivacyPolicy" element={<PrivacyPolicy />} />
+            <Route path="DMCA" element={<Dmca/>} />
           </Route>
         </Route>
 

@@ -2,14 +2,9 @@ import { Spin } from "antd";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  allDetails,
   allShows,
   currentPageSelector,
-  recentDetails,
   setCurrentPage,
-  setMovieDetails,
-  setMovieRecents,
-  setPage,
   setTvshows,
 } from "../../Redux/movieDetailsSlice";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -27,13 +22,11 @@ import { toast } from "react-toastify";
 
 export const TvShows = () => {
   const tvShows = useSelector(allShows);
-  const movieRecents = useSelector(recentDetails);
 
   const currentPage = useSelector(currentPageSelector);
   const PageSelector = (state) => state.movie.page;
   const page = useSelector(PageSelector);
   const [showMore, setShowMore] = useState(false);
-  const [showreMore, setShowreMore] = useState(false);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const { data, isLoading } = useGetNewlyAddedTvShowsQuery(currentPage);
@@ -75,40 +68,6 @@ export const TvShows = () => {
         }
       }
     };
-    // const fetchAddedMovie = async () => {
-    //   if (recent && recent.result && recent.result.items) {
-    //     const imdbIds = recent.result.items.map((item) => item.imdb_id) || [];
-    //     console.log({ imdbIds });
-    //     console.log("page no :", currentPage);
-
-    //     try {
-    //       const responses = await axios.all(
-    //         imdbIds.map((imdbId) =>
-    //           axios.post("https://server-mu-bice.vercel.app/getAddedMovies", {
-    //             imdbIds: [imdbId],
-    //           })
-    //         )
-    //       );
-
-    //       const movieList = responses
-    //         .map((response) => response.data)
-    //         .flat() // Flatten the nested arrays
-    //         .filter(Boolean);
-
-    //       console.log("Movie new:", movieList); // Log the flattened movieList
-    //       dispatch(setMovieRecents(movieList));
-    //       setLoading(false);
-    //     } catch (error) {
-    //       toast.error(error, {
-    //         position: "top-right",
-    //         autoClose: 3000,
-    //       });
-    //       console.error("Error fetching new movie details:", error);
-    //     }
-    //   }
-    // };
-    // fetchAddedMovie();
-
     fetchMovieDetails();
   }, [currentPage, data, dispatch, recent]);
   const thresholdMovies = 0.3;
@@ -116,9 +75,6 @@ export const TvShows = () => {
   const handleViewMore = () => {
     setShowMore(true); // Show more items when "View More" button is clicked
   };
-  // const handlereViewMore = () => {
-  //   setShowreMore(true); // Show more items when "View More" button is clicked
-  // };
 
   const MovieCardsMemoized = React.memo(MovieCards);
   let skeletonCards = [];
@@ -159,26 +115,6 @@ export const TvShows = () => {
         />
       </motion.div>
     ));
-  // const movie = movieRecents
-  //   ?.filter((details) => details.Response === "True")
-  //   .map((details) => (
-  //     <motion.div
-  //       key={details?.imdbID}
-  //       variants={cardVariants}
-  //       initial="hidden"
-  //       animate="visible"
-  //     >
-  //       <MovieCardsMemoized
-  //         key={details?.imdbID}
-  //         imageUrl={details?.Poster}
-  //         title={details?.Title}
-  //         year={details?.Year}
-  //         rating={details?.imdbRating}
-  //         featured={true}
-  //         link={`movie/${details?.imdbID}`}
-  //       />
-  //     </motion.div>
-  //   ));
 
   return (
     <div className="min-h-screen ">
@@ -186,7 +122,7 @@ export const TvShows = () => {
 
       <div className="p-4 bg-gray-800 ">
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
-          🔥New Releases
+          🔥Recently Added
         </header>
 
         <InfiniteScroll
@@ -228,51 +164,6 @@ export const TvShows = () => {
           )}
         </InfiniteScroll>
       </div>
-      {/* <div className="border-gray-900  border-b-2"></div>
-      <div className="p-4 bg-gray-800 ">
-        <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
-          🔥Recently Added
-        </header>
-
-        <InfiniteScroll
-          style={{ overflow: "hidden" }}
-          dataLength={movie.length} //This is important field to render the next data
-          next={() => dispatch(setPage(page + 1))}
-          scrollThreshold={thresholdRecentMovies}
-          hasMore={showreMore} // Set to true to enable infinite scroll
-          loader={
-            <div className=" flex justify-center items-center ">
-              <Spin size="large " /> <p className=" mx-2 text-slate-50">Loading ...</p>
-            </div>
-          }
-          endMessage={
-            showreMore && (
-              <p className="text-center ">
-                <b>Yay! You have seen it all</b>
-              </p>
-            )
-          }
-        >
-          <motion.section
-            className="grid s:grid-cols-1 m:grid-cols-2 gap-4 s:px-2 m:px-1 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 3xl:grid-cols-6 "
-            initial="hidden"
-            animate="visible"
-            variants={container}
-          >
-            {loading || isLoading ? skeletonCards : movie}
-          </motion.section>
-          {!showreMore && (
-            <div className="text-center my-2">
-              <button
-                onClick={handlereViewMore}
-                className="   hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"
-              >
-                View More
-              </button>
-            </div>
-          )}
-        </InfiniteScroll>
-      </div> */}
     </div>
   );
 };

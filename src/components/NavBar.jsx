@@ -137,7 +137,7 @@ const NavBar = () => {
           {/* Logo or Brand (centered) */}
           <Link
             to="/dashboard"
-            className="mx-auto text-4xl font-bold text-white font-libre lg:mx-0"
+            className="mx-auto text-4xl font-bold text-white font-libre lg:mx-0 hover:text-yellow-400 "
           >
             MovieNexus
           </Link>
@@ -216,14 +216,14 @@ const NavBar = () => {
             </>
           )}
           {/* Navigation Links */}
-          <div className="hidden lg:flex gap-3 md:ml-[28rem] ">
-            <Link to="/dashboard" className="text-white hover:text-gray-300">
+          <div className="hidden lg:flex gap-3 md:ml-[28rem] font-libre ">
+            <Link to="/dashboard" className="text-white hover:text-yellow-500">
               Home
             </Link>
-            <Link to="/dashboard/tvshows" className="text-white hover:text-gray-300">
+            <Link to="/dashboard/tvshows" className="text-white hover:text-yellow-500">
               TV Shows
             </Link>
-            <Link to="/dashboard" className="text-white hover:text-gray-300">
+            <Link to="/dashboard" className="text-white hover:text-yellow-500">
               Trending
             </Link>
           </div>
@@ -388,15 +388,18 @@ const NavBar = () => {
         </div>
 
         {isSuccess && !isMovieLinkClicked && movies?.Response === "True" ? (
-          <div
-            className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute transition-all ease-out ${
-              isScrolled ? "hidden transition-all ease-in" : ""
+          <motion.div
+            className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute ${
+              isScrolled ? "hidden" : ""
             }`}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: isScrolled ? 0 : 1, y: isScrolled ? -20 : 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <Link to={`movie/${movies?.imdbID}`} onClick={handleMovieLinkClick}>
               <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-950 bg-opacity-95">
                 <li className="block float-left w-full p-3 border-b-2 border-current">
-                  <div className="float-left inline-block mr-[20px] h-2/4 w-24  overflow-hidden">
+                  <div className="float-left inline-block mr-[20px] h-2/4 w-24 overflow-hidden">
                     <img
                       src={movies.Poster}
                       alt={movies.Title}
@@ -414,7 +417,7 @@ const NavBar = () => {
                 </li>
               </ul>
             </Link>
-          </div>
+          </motion.div>
         ) : (
           // Display a message when no data is available
           <div className="text-white">
