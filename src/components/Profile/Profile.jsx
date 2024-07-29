@@ -110,7 +110,7 @@ const Profile = () => {
     dispatch(logout());
   };
   return (
-    <div className="max-w-md mx-auto mt-8 px-4 py-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-md mx-auto mt-8 px-4 py-6 bg-white shadow-md rounded-lg mb-3">
       <h2 className="text-3xl font-semibold mb-4 text-center">Profile</h2>
       <div className="flex flex-col items-center">
         <div className="mb-4 cursor-pointer">

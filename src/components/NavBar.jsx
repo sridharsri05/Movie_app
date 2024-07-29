@@ -121,7 +121,7 @@ const NavBar = () => {
       <nav
         className={`p-1 bg-gray-800 border-b-2 border-gray-900 ${
           visible
-            ? "fixed top-0 left-0 w-full z-10 bg-gray-400 transition-all duration-1000 ease-in-out "
+            ? "fixed top-0 left-0 w-full z-50 bg-gray-400 transition-all duration-1000 ease-in-out "
             : "" // Hide the navbar when `visible` is false
         }`}
       >

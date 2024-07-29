@@ -131,7 +131,7 @@ const Dashboard = () => {
       >
         {showGreeting && (
           <div className="text-center">
-            <h1 className="mb-4 text-4xl font-bold text-gray-800">
+            <h1 className="mb-4 text-4xl font-bold text-white">
               Welcome back, <span className="text-blue-600">{user.username}</span>!
             </h1>
             <p className="mb-8 text-lg font-bold text-gray-600">{greeting} buddy! ❤️</p>

@@ -16,7 +16,12 @@
     font-weight: 700;
 }
 
-
+body {
+    --tw-bg-opacity: 1;
+    background-color: rgb(31 41 55 / var(--tw-bg-opacity)) !important
+        /* #1f2937 */
+    ;
+}
 
 @tailwind base;
 @tailwind components;
@@ -27,7 +32,3 @@
     -webkit-transition: all .70s ease-in-out;
 
 }
-
-
-
-
