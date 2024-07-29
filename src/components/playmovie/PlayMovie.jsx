@@ -135,7 +135,7 @@ const PlayMovie = () => {
     <>
       <div className="pt-6 bg-black">
         <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]">
-          {/* {movieview ? (
+          {movieview ? (
             <iframe
               className="w-full h-full rounded-2xl"
               src={`https://vidsrc.xyz/embed/movie/${imdbID}`}
@@ -147,7 +147,7 @@ const PlayMovie = () => {
               src={`https://vidsrc.to/embed/movie/${imdbID}`}
               allowFullScreen
             ></iframe>
-          )} */}
+          )}
         </div>
 
         {/* leftside card */}
