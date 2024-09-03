@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-// import flowbitePlugin from 'flowbite/plugin';
 import defaultTheme from 'tailwindcss/defaultTheme';
 
 
@@ -33,12 +32,14 @@ export default {
       },
       fontFamily: {
         libre: ['"Poppins"', ...defaultTheme.fontFamily.sans], gilroy: "Gilroy",
-      }
+      },
+      gridColumn: {
+        'span-1.5': 'span 1.5 / span 1.5',
+      },
     },
 
   },
   plugins: [
-    // flowbitePlugin(),
 
 
   ],
