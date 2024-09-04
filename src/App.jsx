@@ -14,7 +14,7 @@ import { TvShows } from "./components/recentlyadded/TvShows";
 import SearchResults from "./components/SearchResults";
 import PrivacyPolicy from "./components/Privacy/PrivacyPolicy";
 import Dmca from "./components/Privacy/Dmca";
-import PlayTvSeries from "./components/PlayTv/PlayTvseries";
+import TvSeries from "./components/playTvseries/TvSeries";
 
 function App() {
   const { isAuthReady } = useAuthInitialization();
@@ -35,8 +35,8 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="tvShows" element={<TvShows />} />
             <Route path="movie/:imdbID" element={<PlayMovie />} />
-            <Route path="episodes/:imdbID/:season/:epi" element={<PlayTvSeries />} />
-            <Route path="tvSeries/:imdbID" element={<PlayTvSeries />} />
+            <Route path="episodes/:imdbID/:season/:epi" element={<TvSeries />} />
+            <Route path="tvSeries/:imdbID" element={<TvSeries />} />
             <Route path="searchResults" element={<SearchResults />} />
             <Route path="PrivacyPolicy" element={<PrivacyPolicy />} />
             <Route path="DMCA" element={<Dmca />} />
