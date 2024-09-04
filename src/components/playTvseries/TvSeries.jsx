@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState, useCallback, memo } from "react";
+import { useEffect, useState, useCallback, memo, useRef } from "react";
 import axios from "axios";
 import CustomCarousel from "../customeCards/CustomCarousel";
 import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
@@ -16,6 +16,7 @@ function TvSeries() {
   const { data: SeriesData } = useSearchByidQuery(imdbID);
   const apiKey = "6a42205b97295fef4aea5d2775c755ba";
   const navigate = useNavigate();
+  const iframeRef = useRef(null);
 
   const [HideButton, setHideButton] = useState(true);
 
@@ -176,13 +177,22 @@ function TvSeries() {
     navigate(`/dashboard/episodes/${imdbID}/1/1`);
     setHideButton(false);
   };
+  useEffect(() => {
+    // Scroll to the iframe when the component mounts
+    if (iframeRef.current) {
+      iframeRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [imdbID, HideButton]);
   console.log(seriesData, "ser_d");
   console.log(seasons, "season and epi");
   return (
     <>
       <div className="pt-6 bg-black">
         {season && epi && (
-          <div className="mx-4 l:h-[15rem] sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]">
+          <div
+            className="mx-4 l:h-[15rem] sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]"
+            ref={iframeRef}
+          >
             <iframe
               className="w-full h-full rounded-2xl"
               src={`https://vidsrc.xyz/embed/tv/${imdbID}/${season}-${epi}`}
