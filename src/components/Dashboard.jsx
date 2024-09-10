@@ -8,7 +8,6 @@ import {
   currentPageSelector,
   setMovieDetails,
   setCurrentPage,
-  recentDetails,
 } from "../Redux/movieDetailsSlice";
 import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
@@ -20,7 +19,7 @@ import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
 import { Spin } from "antd";
-
+import {Apis} from '../api/api'
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
   const { greeting, showGreeting } = useGreeting();
@@ -47,7 +46,7 @@ const Dashboard = () => {
         try {
           const responses = await axios.all(
             imdbIds.map((imdbId) =>
-              axios.post("https://server-mu-bice.vercel.app/getLatestMovies", {
+              axios.post(`${Apis.baseURL}/getLatestMovies`, {
                 imdbIds: [imdbId],
               })
             )
