@@ -17,6 +17,7 @@ import {
 import MovieCardSkeleton from "../Cards/MovieCardSkeleton";
 import MovieCards from "../Cards/MovieCards";
 import { toast } from "react-toastify";
+import { Apis } from "../../api/api";
 
 //<=======================----------------------------------------------------------------------------------------------------------->
 
@@ -45,7 +46,7 @@ export const TvShows = () => {
         try {
           const responses = await axios.all(
             imdbIds.map((imdbId) =>
-              axios.post("https://server-mu-bice.vercel.app/getAddedTVShows", {
+              axios.post(`${Apis.baseURL}/getAddedTVShows`, {
                 imdbIds: [imdbId],
               })
             )
