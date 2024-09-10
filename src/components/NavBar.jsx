@@ -8,6 +8,7 @@ import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
 import { setSearchResults } from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
 import { motion } from "framer-motion";
+import { useSearchMoviesSeriesQuery } from "../Redux/Services/Searchapi";
 
 const NavBar = () => {
   const [query, setQuery] = useState("");
@@ -19,9 +20,15 @@ const NavBar = () => {
   const location = useLocation();
   const { user } = useSelector(selectAuth);
   const { data: movies, isSuccess } = useSearchMoviesQuery(query);
+  const { data, error, isLoading } = useSearchMoviesSeriesQuery(query);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
   // console.log(user);
+  console.log(
+    data?.results.filter((e) => e.media_type === "Movie"),
+    "tv& movie"
+  );
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -55,6 +62,7 @@ const NavBar = () => {
   }, []);
   const [visible, setVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
+
   useEffect(() => {
     const handleVisibleScroll = () => {
       const currentScrollPos = window.scrollY;
@@ -105,7 +113,6 @@ const NavBar = () => {
       console.error("Error handling search:", error);
     }
   };
-
   const handleSignOut = () => {
     // Dispatch the logout action
     dispatch(logout());
