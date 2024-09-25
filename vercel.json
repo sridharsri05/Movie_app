@@ -18,6 +18,10 @@
       "dest": "/index.html"
     },
     {
+      "src": "/reset-password/(.*)",
+      "dest": "/index.html"
+    },
+    {
       "src": "/unauthorized",
       "dest": "/index.html"
     },
@@ -26,7 +30,7 @@
       "dest": "/index.html"
     },
     {
-      "src": "/admindashboard/?(.*)", 
+      "src": "/admindashboard/?(.*)",
       "dest": "/index.html"
     }
   ]
