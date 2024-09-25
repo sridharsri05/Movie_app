@@ -157,7 +157,10 @@ const Login = () => {
                   <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </span>
               </div>
-              <Link to={"/forgot-password"} className="my-3 ">
+              <Link
+                to={"/forgot-password"}
+                className="my-3 text-blue-500 hover:underline"
+              >
                 {" "}
                 forget Password?{" "}
               </Link>

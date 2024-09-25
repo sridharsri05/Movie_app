@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { Apis } from "../../api/api";
 import { toast } from "react-toastify";
@@ -13,6 +13,7 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { token } = useParams();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +27,9 @@ const ResetPassword = () => {
         position: "top-right",
         autoClose: 3000,
       });
+      if (response.data.message === "Password reset successfully") {
+        navigate("/login");
+      }
     } catch (error) {
       // Handle errors (e.g., show error message)
       const errorMessage =
