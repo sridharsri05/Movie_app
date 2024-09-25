@@ -15,6 +15,8 @@ import SearchResults from "./components/SearchResults";
 import PrivacyPolicy from "./components/Privacy/PrivacyPolicy";
 import Dmca from "./components/Privacy/Dmca";
 import TvSeries from "./components/playTvseries/TvSeries";
+import ForgotPassword from "./components/passwordReset/ForgotPassword";
+import ResetPassword from "./components/passwordReset/ResetPassword";
 
 function App() {
   const { isAuthReady } = useAuthInitialization();
@@ -28,6 +30,8 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/" index element={<Login />} />
         <Route path="/login" index element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route path="/dashboard/*" element={<ProtectedRoute allowedRoles={["user"]} />}>
           <Route element={<DashboardLayout />}>

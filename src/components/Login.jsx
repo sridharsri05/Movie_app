@@ -157,7 +157,10 @@ const Login = () => {
                   <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </span>
               </div>
-              <div className="my-3 "> forget Password? </div>
+              <Link to={"/forgot-password"} className="my-3 ">
+                {" "}
+                forget Password?{" "}
+              </Link>
 
               <button
                 type="submit"
