@@ -14,6 +14,9 @@ export const omdbApi = createApi({
     searchByid: builder.query({
       query: (imdbID) => `?apikey=${OMBD_API_KEY}&i=${imdbID}`,
     }),
+    searchByQuery: builder.query({
+      query: ({ query, page }) => `?apikey=${OMBD_API_KEY}&s=${query}&page=${page} `,
+    }),
   }),
 });
 
@@ -61,4 +64,4 @@ export const {
   useGetRecentlyAddedMoviesQuery,
   useGetNewlyAddedTvShowsQuery,
 } = vidsrcApi2;
-export const { useSearchMoviesQuery, useSearchByidQuery } = omdbApi;
+export const { useSearchMoviesQuery, useSearchByidQuery ,useSearchByQueryQuery} = omdbApi;

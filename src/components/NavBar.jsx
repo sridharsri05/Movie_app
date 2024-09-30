@@ -4,11 +4,22 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchMoviesQuery } from "../Redux/Services/MovieApi";
-import { setSearchResults } from "../Redux/searchSlice";
+import { useSearchByQueryQuery } from "../Redux/Services/MovieApi";
+import {
+  resetSearchResults,
+  selectCurrentPage,
+  selectSearchResults,
+  setDataLoading,
+  setSearchQuery,
+  setSearchResults,
+  setTotalResults,
+} from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
 import { motion } from "framer-motion";
 import { useSearchMoviesSeriesQuery } from "../Redux/Services/Searchapi";
+import axios from "axios";
+import { debounce } from "lodash";
+import { useCallback } from "react";
 
 const NavBar = () => {
   const [query, setQuery] = useState("");
@@ -18,17 +29,24 @@ const NavBar = () => {
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   const location = useLocation();
+  const [error, setError] = useState(null);
+  const [Data, setData] = useState([]);
   const { user } = useSelector(selectAuth);
-  const { data: movies, isSuccess } = useSearchMoviesQuery(query);
-  const { data, error, isLoading } = useSearchMoviesSeriesQuery(query);
+  const currentPage = useSelector(selectCurrentPage);
+  const { data: movies, isSuccess } = useSearchByQueryQuery(
+    {
+      query: query,
+      page: currentPage,
+    },
+    { skip: !query }
+  );
+  // const { data, error, isLoading } = useSearchMoviesSeriesQuery(query);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-
-  // console.log(user);
-  console.log(
-    data?.results.filter((e) => e.media_type === "Movie"),
-    "tv& movie"
-  );
+  const [isLoading, setIsLoading] = useState(false);
+  const Search = useSelector(selectSearchResults);
+  // console.log(user)
+  // console.log(movies, "mv");
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -95,33 +113,145 @@ const NavBar = () => {
     setQuery("");
   };
 
-  const handleSearch = async () => {
-    try {
-      const firstMovie = movies;
+  // const handleSearch = useCallback(async () => {
+  //   if (isSuccess && movies) {
+  //     try {
+  //       setData([]);
+  //       dispatch(resetSearchResults());
+  //       dispatch(setDataLoading(true));
+  //       if (movies.Response === "True") {
+  //         dispatch(setTotalResults(Number(movies.totalResults)));
 
-      if (firstMovie && firstMovie.Response === "True") {
-        // Fetch playable movie from vidsrcApi using titleId
-        const titleId = firstMovie.imdbID;
-        // You can perform additional logic or API calls here if needed
-        console.log(titleId, "navbar");
-        // Dispatch the setSearchResults action to update the search results in Redux store
-        dispatch(setSearchResults(firstMovie));
-        navigate("searchResults");
-        setQuery("");
+  //         const combinedResults = await Promise.all(
+  //           movies.Search.map(async (movie) => {
+  //             try {
+  //               const detailResponse = await axios.get(
+  //                 `https://www.omdbapi.com/?i=${movie.imdbID}&apikey=8d58c823`
+  //               );
+  //               const movieDetails = detailResponse.data;
+
+  //               return {
+  //                 ...movie,
+  //                 Plot: movieDetails.Plot || "Plot not available",
+  //                 Genre: movieDetails.Genre || "Genre not available",
+  //                 Director: movieDetails.Director || "Director not available",
+  //                 Actors: movieDetails.Actors || "Actors not available",
+  //                 imdbRating: movieDetails.imdbRating || "Rating not available",
+  //               };
+  //             } catch (error) {
+  //               console.error(`Error fetching details for ${movie.imdbID}:`, error);
+  //               return movie;
+  //             }
+  //           })
+  //         );
+
+  //         dispatch(setSearchResults(combinedResults));
+  //         setData(combinedResults);
+  //         console.log(Data, "sasdgvah");
+  //         dispatch(setDataLoading(false));
+  //         dispatch(setSearchQuery(query));
+
+  //         return true;
+  //       } else {
+  //         dispatch(setDataLoading(false));
+  //         return false;
+  //       }
+  //     } catch (error) {
+  //       console.error("Error handling search:", error);
+  //       dispatch(setDataLoading(false));
+  //       return false;
+  //     }
+  //   }
+  //   return false;
+  // });
+  // useEffect(() => {
+  //   handleSearch();
+  // }, [query]);
+
+  const handleSearch = useCallback(
+    debounce(async () => {
+      if (isSuccess && movies) {
+        try {
+          setIsLoading(true);
+          setError(null);
+          setData([]);
+          dispatch(resetSearchResults());
+          dispatch(setDataLoading(true));
+
+          if (movies.Response === "True") {
+            dispatch(setTotalResults(Number(movies.totalResults)));
+
+            const combinedResults = await Promise.all(
+              movies.Search.map(async (movie) => {
+                try {
+                  const detailResponse = await axios.get(
+                    `https://www.omdbapi.com/?i=${movie.imdbID}&apikey=8d58c823`
+                  );
+                  const movieDetails = detailResponse.data;
+
+                  return {
+                    ...movie,
+                    Plot: movieDetails.Plot || "Plot not available",
+                    Genre: movieDetails.Genre || "Genre not available",
+                    Director: movieDetails.Director || "Director not available",
+                    Actors: movieDetails.Actors || "Actors not available",
+                    imdbRating: movieDetails.imdbRating || "Rating not available",
+                  };
+                } catch (error) {
+                  console.error(`Error fetching details for ${movie.imdbID}:`, error);
+                  return movie;
+                }
+              })
+            );
+
+            dispatch(setSearchResults(combinedResults));
+            setData(combinedResults);
+            dispatch(setDataLoading(false));
+            dispatch(setSearchQuery(query));
+            return true;
+          } else {
+            setError(movies.Error || "No results found");
+          }
+        } catch (error) {
+          console.error("Error handling search:", error);
+          setError("Something went wrong. Please try again later.");
+        } finally {
+          setIsLoading(false);
+          dispatch(setDataLoading(false));
+          dispatch(setSearchQuery(query));
+        }
       }
-    } catch (error) {
-      console.error("Error handling search:", error);
+    }, 3000),
+    [isSuccess, movies, dispatch, query]
+  );
+
+  useEffect(() => {
+    if (query) {
+      handleSearch();
+    }
+  }, [query, handleSearch]);
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleSearch().then((isSuccessful) => {
+        if (isSuccessful && query.trim() !== "") {
+          setQuery("");
+          setIsMovieLinkClicked(true);
+          navigate(`searchResults/${query}`);
+        }
+      });
     }
   };
+
   const handleSignOut = () => {
     // Dispatch the logout action
     dispatch(logout());
-    // You can also add other logic here, such as redirecting the user to the login page
   };
   const menuVariants = {
     open: { x: 0 },
     closed: { x: "-100%" },
   };
+  const isSearchResultsPage = location.pathname.startsWith("/dashboard/searchResults/");
 
   return (
     <>
@@ -375,11 +505,7 @@ const NavBar = () => {
             placeholder="Search Movies & Tv Shows/ webSeries"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
+            onKeyPress={handleKeyPress}
           />
         </div>
 
@@ -393,44 +519,56 @@ const NavBar = () => {
             </span>
           </button>
         </div>
-
-        {isSuccess && !isMovieLinkClicked && movies?.Response === "True" ? (
-          <motion.div
-            className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute ${
-              isScrolled ? "hidden" : ""
-            }`}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: isScrolled ? 0 : 1, y: isScrolled ? -20 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          >
-            <Link to={`movie/${movies?.imdbID}`} onClick={handleMovieLinkClick}>
-              <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-950 bg-opacity-95">
-                <li className="block float-left w-full p-3 border-b-2 border-current">
-                  <div className="float-left inline-block mr-[20px] h-2/4 w-24 overflow-hidden">
-                    <img
-                      src={movies.Poster}
-                      alt={movies.Title}
-                      className="w-full h-full rounded-md"
-                    />
-                  </div>
-                  <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
-                    {movies.Title}{" "}
-                    <span className="ml-1 text-[12px]">( {movies.Year} )</span>
-                    <span className="float-end">⭐ {movies.imdbRating}</span>
-                  </div>
-                  <p className="font-mono text-sm font-thin text-white text-wrap text-ellipsis">
-                    {movies.Plot}
-                  </p>
-                </li>
-              </ul>
-            </Link>
-          </motion.div>
-        ) : (
-          // Display a message when no data is available
-          <div className="text-white">
-            {movies?.Error === "Incorrect IMDb ID." ? "" : movies?.Error}
-          </div>
-        )}
+        {isLoading && <div className="text-white">Loading...</div>}
+        {!isSearchResultsPage &&
+          isSuccess &&
+          !isMovieLinkClicked &&
+          Data.length > 0 &&
+          !isLoading && (
+            <motion.div
+              className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute  ${
+                isScrolled ? "hidden" : ""
+              }`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: isScrolled ? 0 : 1, y: isScrolled ? -20 : 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              {Data.map((movie) => (
+                <Link
+                  key={movie.imdbID}
+                  to={
+                    movie.Type === "movie" || movie.Type === "game"
+                      ? `/dashboard/movie/${movie?.imdbID}`
+                      : movie.Type === "series"
+                      ? `/dashboard/tvSeries/${movie?.imdbID}`
+                      : `/dashboard/movie/${movie?.imdbID}`
+                  }
+                  onClick={handleMovieLinkClick}
+                >
+                  <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-950 bg-opacity-95">
+                    <li className="block float-left w-full p-3 border-b-2 border-current">
+                      <div className="float-left inline-block mr-[20px] h-2/4 w-24 overflow-hidden">
+                        <img
+                          src={movie.Poster}
+                          alt={movie.Title}
+                          className="w-full h-full rounded-md"
+                        />
+                      </div>
+                      <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
+                        {movie.Title}{" "}
+                        <span className="ml-1 text-[12px]">( {movie.Year} )</span>
+                        <span className="float-end">⭐ {movie.imdbRating}</span>
+                      </div>
+                      <p className="font-mono text-sm font-thin text-white text-wrap text-ellipsis">
+                        {movie.Plot}
+                      </p>
+                    </li>
+                  </ul>
+                </Link>
+              ))}
+            </motion.div>
+          )}
+        {error && <div className="text-red-500 mt-2">{error}</div>}
       </div>
     </>
   );

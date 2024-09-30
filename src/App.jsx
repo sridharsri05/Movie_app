@@ -41,7 +41,7 @@ function App() {
             <Route path="movie/:imdbID" element={<PlayMovie />} />
             <Route path="episodes/:imdbID/:season/:epi" element={<TvSeries />} />
             <Route path="tvSeries/:imdbID" element={<TvSeries />} />
-            <Route path="searchResults" element={<SearchResults />} />
+            <Route path="searchResults/:query" element={<SearchResults />} />
             <Route path="PrivacyPolicy" element={<PrivacyPolicy />} />
             <Route path="DMCA" element={<Dmca />} />
           </Route>

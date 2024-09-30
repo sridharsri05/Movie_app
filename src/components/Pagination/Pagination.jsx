@@ -1,21 +1,53 @@
-// Pagination.js
 import React, { useEffect, useState } from "react";
+import {
+  resetSearchResults,
+  selectCurrentPage,
+  selectSearchQuery,
+  selectTotalResults,
+  setCurrentPage,
+  setDataLoading,
+  setSearchResults,
+  setTotalResults,
+} from "../../Redux/searchSlice";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { useSearchByQueryQuery } from "../../Redux/Services/MovieApi";
+import { Pagination as AntPagination, ConfigProvider } from "antd";
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-  const range = (start, end) =>
-    Array.from({ length: end - start + 1 }, (_, i) => i + start);
+const Pagination = () => {
+  const [screenSize, setScreenSize] = useState("lg");
+  const [theme, setTheme] = useState("light"); // State to manage theme
+  const dispatch = useDispatch();
 
-  const pagesToShow = {
-    s: 2, // 320px
-    m: 3, // 375px
-    l: 5, // 425px
-    md: 7, // 768px
-    lg: 10, // 1024px
-    xl: 12, // 1440px
-  };
+  const SearchQuery = useSelector(selectSearchQuery);
+  const currentPage = useSelector(selectCurrentPage);
+  const totalResults = useSelector(selectTotalResults);
 
-  // Determine the current screen size based on window width
-  const [screenSize, setScreenSize] = useState("lg"); // Default to large size initially
+  // Fetch data using the query and current page
+  const { data: movies, isSuccess } = useSearchByQueryQuery(
+    { query: SearchQuery, page: currentPage },
+    { skip: !SearchQuery }
+  );
+
+  // Calculate total pages
+  const totalPages = Math.ceil(totalResults / 10);
+
+  // Detect system dark mode preference
+  useEffect(() => {
+    const handleThemeChange = (e) => {
+      setTheme(e.matches ? "dark" : "light");
+    };
+
+    // Check initial theme
+    const darkModeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setTheme(darkModeMediaQuery.matches ? "dark" : "light");
+
+    // Listen for changes in theme
+    darkModeMediaQuery.addEventListener("change", handleThemeChange);
+
+    // Clean up event listener on unmount
+    return () => darkModeMediaQuery.removeEventListener("change", handleThemeChange);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -25,7 +57,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       } else if (windowWidth < 375) {
         setScreenSize("m");
       } else if (windowWidth < 425) {
-        setScreenSize("sm");
+        setScreenSize("l");
       } else if (windowWidth < 768) {
         setScreenSize("md");
       } else if (windowWidth < 1024) {
@@ -35,61 +67,88 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       }
     };
 
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
-
-    // Call resize handler once to set initial screen size
     handleResize();
-
-    // Cleanup function to remove event listener
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const pagesToDisplay = pagesToShow[screenSize];
-  const startPage = Math.max(1, currentPage - Math.floor(pagesToDisplay / 2));
-  const endPage = Math.min(totalPages, startPage + pagesToDisplay - 1);
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (isSuccess && movies) {
+        try {
+          dispatch(setDataLoading(true));
+          dispatch(resetSearchResults());
+          if (movies.Response === "True") {
+            dispatch(setTotalResults(Number(movies.totalResults)));
+
+            const combinedResults = await Promise.all(
+              movies.Search.map(async (movie) => {
+                try {
+                  const detailResponse = await axios.get(
+                    `https://www.omdbapi.com/?i=${movie.imdbID}&apikey=8d58c823`
+                  );
+                  const movieDetails = detailResponse.data;
+
+                  return {
+                    ...movie,
+                    Plot: movieDetails.Plot || "Plot not available",
+                    Genre: movieDetails.Genre || "Genre not available",
+                    Director: movieDetails.Director || "Director not available",
+                    Actors: movieDetails.Actors || "Actors not available",
+                    imdbRating: movieDetails.imdbRating || "Rating not available",
+                  };
+                } catch (error) {
+                  console.error(`Error fetching details for ${movie.imdbID}:`, error);
+                  return movie;
+                }
+              })
+            );
+
+            dispatch(setSearchResults(combinedResults));
+            dispatch(setDataLoading(false));
+          }
+        } catch (error) {
+          console.error("Error handling search:", error);
+          dispatch(setDataLoading(false));
+        }
+      }
+    };
+
+    fetchSearchResults();
+  }, [movies, isSuccess, dispatch, SearchQuery, currentPage]);
+
+  const onPageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      dispatch(setCurrentPage(page));
+    }
+  };
 
   return (
-    <nav className="flex justify-center mt-4">
-      <ul className="flex space-x-2">
-        <li>
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 text-blue-600 font-semibold rounded ${
-              currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            Previous
-          </button>
-        </li>
-        {range(startPage, endPage).map((page) => (
-          <li key={page}>
-            <button
-              onClick={() => onPageChange(page)}
-              className={`px-3 py-1 rounded ${
-                currentPage === page
-                  ? "bg-blue-600 text-white font-semibold"
-                  : "text-blue-600 hover:bg-blue-100"
-              }`}
-            >
-              {page}
-            </button>
-          </li>
-        ))}
-        <li>
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 text-blue-600 font-semibold rounded ${
-              currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            Next
-          </button>
-        </li>
-      </ul>
-    </nav>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: theme === "light" ? "#1890ff" : "#177ddc", // Customize the primary color
+          colorBgContainer: theme === "light" ? "#ffffff" : "#001529", // Background color
+          colorText: theme === "light" ? "#000000" : "#ffffff", // Text color
+        },
+      }}
+    >
+      <div className="flex flex-col justify-center items-center mt-6">
+        {/* Ant Design Pagination Component */}
+        <AntPagination
+          current={currentPage}
+          total={totalResults}
+          pageSize={10}
+          onChange={onPageChange}
+          showSizeChanger={false}
+          showQuickJumper
+          showTotal={(total) => `Total ${total} items`}
+          className={`${
+            theme === "dark" ? "ant-pagination-dark" : "ant-pagination-light"
+          }`}
+        />
+      </div>
+    </ConfigProvider>
   );
 };
 
