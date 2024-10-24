@@ -2,7 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBarsStaggered, faUser, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBarsStaggered,
+  faUser,
+  faSearch,
+  faSpinner,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchByQueryQuery } from "../Redux/Services/MovieApi";
 import {
@@ -16,7 +22,7 @@ import {
 } from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
 import { motion } from "framer-motion";
-import { useSearchMoviesSeriesQuery } from "../Redux/Services/Searchapi";
+import { useFetchPopularMoviesQuery } from "../Redux/Services/Searchapi";
 import axios from "axios";
 import { debounce } from "lodash";
 import { useCallback } from "react";
@@ -40,27 +46,27 @@ const NavBar = () => {
     },
     { skip: !query }
   );
-  // const { data, error, isLoading } = useSearchMoviesSeriesQuery(query);
   const dropdownRef = useRef(null);
+
   const navigate = useNavigate();
+  const offSetRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const Search = useSelector(selectSearchResults);
   // console.log(user)
-  // console.log(movies, "mv");
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
+  // console.log(d, "mv");
+  const handleMouseEnter = () => setIsOpen(true);
+  const handleMouseLeave = () => setIsOpen(false);
 
-    document.addEventListener("click", handleClickOutside);
+  const handleButtonFocus = () => {
+    setIsOpen(true);
+  };
 
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
+  const handleButtonBlur = (event) => {
+    // Check if the focused element is still within the dropdown
+    if (dropdownRef.current && !dropdownRef.current.contains(event.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
   useEffect(() => {
     setIsMovieLinkClicked(false);
   }, [location]);
@@ -78,6 +84,7 @@ const NavBar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
   const [visible, setVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
@@ -97,11 +104,7 @@ const NavBar = () => {
     };
   }, [prevScrollPos]);
 
-  const navbarHeight = visible ? 90 : 0;
-
-  const toggleDropdown = () => {
-    setIsOpen((prev) => !prev);
-  };
+  const navbarHeight = visible ? 0 : 0;
 
   const toggleOffCanvas = () => {
     setIsOffCanvasOpen(!isOffCanvasOpen);
@@ -112,61 +115,6 @@ const NavBar = () => {
     setIsMovieLinkClicked(true);
     setQuery("");
   };
-
-  // const handleSearch = useCallback(async () => {
-  //   if (isSuccess && movies) {
-  //     try {
-  //       setData([]);
-  //       dispatch(resetSearchResults());
-  //       dispatch(setDataLoading(true));
-  //       if (movies.Response === "True") {
-  //         dispatch(setTotalResults(Number(movies.totalResults)));
-
-  //         const combinedResults = await Promise.all(
-  //           movies.Search.map(async (movie) => {
-  //             try {
-  //               const detailResponse = await axios.get(
-  //                 `https://www.omdbapi.com/?i=${movie.imdbID}&apikey=8d58c823`
-  //               );
-  //               const movieDetails = detailResponse.data;
-
-  //               return {
-  //                 ...movie,
-  //                 Plot: movieDetails.Plot || "Plot not available",
-  //                 Genre: movieDetails.Genre || "Genre not available",
-  //                 Director: movieDetails.Director || "Director not available",
-  //                 Actors: movieDetails.Actors || "Actors not available",
-  //                 imdbRating: movieDetails.imdbRating || "Rating not available",
-  //               };
-  //             } catch (error) {
-  //               console.error(`Error fetching details for ${movie.imdbID}:`, error);
-  //               return movie;
-  //             }
-  //           })
-  //         );
-
-  //         dispatch(setSearchResults(combinedResults));
-  //         setData(combinedResults);
-  //         console.log(Data, "sasdgvah");
-  //         dispatch(setDataLoading(false));
-  //         dispatch(setSearchQuery(query));
-
-  //         return true;
-  //       } else {
-  //         dispatch(setDataLoading(false));
-  //         return false;
-  //       }
-  //     } catch (error) {
-  //       console.error("Error handling search:", error);
-  //       dispatch(setDataLoading(false));
-  //       return false;
-  //     }
-  //   }
-  //   return false;
-  // });
-  // useEffect(() => {
-  //   handleSearch();
-  // }, [query]);
 
   const handleSearch = useCallback(
     debounce(async () => {
@@ -237,6 +185,7 @@ const NavBar = () => {
         if (isSuccessful && query.trim() !== "") {
           setQuery("");
           setIsMovieLinkClicked(true);
+          setIsOffCanvasOpen(false);
           navigate(`searchResults/${query}`);
         }
       });
@@ -256,17 +205,20 @@ const NavBar = () => {
   return (
     <>
       <nav
-        className={`p-1 bg-gray-800 border-b-2 border-gray-900 ${
-          visible
-            ? "fixed top-0 left-0 w-full z-50 bg-gray-400 transition-all duration-1000 ease-in-out "
-            : "" // Hide the navbar when `visible` is false
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(11,0,25,.8) .98%, rgba(11,0,25,.4) 59.23%, rgba(11,0,25,.2) 78.16%, rgba(11,0,25,0) 96.12%)",
+          backgroundBlendMode: "multiply",
+        }}
+        className={`p-2  fixed top-0 left-0 w-full z-50 transition-transform h-[4.5rem] duration-500 ease-in-out ${
+          visible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="container flex items-center justify-between 3xl:justify-around mx-auto ">
+        <div className="container  flex items-center justify-between 3xl:justify-evenly  mx-auto">
           {/* offCanvas trigger Menu Icon */}
           <button
             onClick={toggleOffCanvas}
-            className="text-white lg:hidden focus:outline-none"
+            className="text-white lg:hidden focus:outline-none ml-4"
           >
             <FontAwesomeIcon className="fa-solid" icon={faBarsStaggered} />
           </button>
@@ -274,21 +226,21 @@ const NavBar = () => {
           {/* Logo or Brand (centered) */}
           <Link
             to="/dashboard"
-            className="mx-auto text-4xl font-bold text-white font-libre lg:mx-0 hover:text-yellow-400 "
+            className="mx-auto xl:text-4xl lg:ml-3 xl:ml-0 2xl:ml-2 font-bold text-white font-libre lg:mx-0 hover:text-yellow-400  text-sm sm:text-base md:text-lg lg:text-xl"
           >
             MovieNexus
           </Link>
           {isOffCanvasOpen && (
             <>
               <motion.div
-                className="fixed inset-0 z-50 bg-black bg-opacity-50"
+                className="fixed inset-0 h-screen bg-black bg-opacity-50 "
                 onClick={toggleOffCanvas}
                 initial="closed"
                 animate="open"
                 exit="closed"
               >
                 <motion.div
-                  className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 "
+                  className="relative h-full inset-y-0 left-0  w-64 bg-gray-800  "
                   variants={menuVariants}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
@@ -296,13 +248,38 @@ const NavBar = () => {
                   <motion.div
                     className="text-white hover:text-gray-300 py-2 px-4 font-libre cursor-pointer flex items-center justify-center"
                     onClick={toggleOffCanvas}
-                    whileHover={{ scale: 1.1 }} // Add scale animation on hover
-                    whileTap={{ scale: 0.9 }} // Add scale animation on tap/click
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
                     <span className="text-xl">&times;</span>
                   </motion.div>
 
                   {/* Off-canvas menu content goes here */}
+                  <div className="relative text-gray-600 focus-within:text-gray-400 mx-auto mt-1 max-w-[15rem]">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+                      <FontAwesomeIcon icon={faSearch} className="text-lg" />
+                    </span>
+                    <input
+                      ref={offSetRef}
+                      type="search"
+                      className={`w-full py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none  focus:border-green-500 ${
+                        isLoading ? "hide-clear-button" : ""
+                      } `}
+                      placeholder="Search Movies & Tv Shows..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                    />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
+                      {isLoading && (
+                        <FontAwesomeIcon
+                          icon={faSpinner}
+                          spin
+                          className="text-lg text-cyan-700"
+                        />
+                      )}
+                    </span>
+                  </div>
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -353,7 +330,7 @@ const NavBar = () => {
             </>
           )}
           {/* Navigation Links */}
-          <div className="hidden lg:flex gap-3 md:ml-[28rem] font-libre ">
+          <div className="hidden lg:flex lg:ml-[14rem]  xl:ml-[30rem] gap-3 md:ml-[28rem] font-libre ">
             <Link to="/dashboard" className="text-white hover:text-yellow-500">
               Home
             </Link>
@@ -364,15 +341,42 @@ const NavBar = () => {
               Trending
             </Link>
           </div>
-
+          {/* search bar */}
+          <div className="relative text-gray-600 focus-within:text-gray-400 ml-4  3xl:ml-0  lg:grid ">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
+              <FontAwesomeIcon icon={faSearch} className="text-lg" />
+            </span>
+            <input
+              type="search"
+              className={`l:focus:w-full l:focus: transition-all l:focus:duration-300 lg:w-full l:focus:ease-linear w-0 py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none  focus:border-green-500 ${
+                isLoading ? "hide-clear-button" : ""
+              } `}
+              placeholder="Search Movies & Tv Shows..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <span className="absolute inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
+              {isLoading && (
+                <FontAwesomeIcon
+                  icon={faSpinner}
+                  spin
+                  className="text-lg text-cyan-700"
+                />
+              )}
+            </span>
+          </div>
           {/* User Profile */}
           <div ref={dropdownRef} className="items-center hidden space-x-4 lg:flex">
             <div className="relative inline-block text-left">
               <button
                 type="button"
                 className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  
-                  ${isOpen ? "focus:ring focus:ring-blue-700 " : ""}`}
-                onClick={toggleDropdown}
+                 ${isOpen ? "focus:ring-2 focus:ring-blue-700" : "hover:bg-gray-700"}`}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onFocus={handleButtonFocus}
+                onBlur={handleButtonBlur}
               >
                 {/* You may replace this with your Avatar component */}
                 <div className="flex items-center justify-center ">
@@ -398,10 +402,11 @@ const NavBar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="origin-top-right absolute z-50 right-0 mt-2 min-w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none *:font-libre"
+                  onMouseEnter={handleMouseEnter} // Keep dropdown open when hovering
+                  onMouseLeave={handleMouseLeave}
+                  className="origin-top-right absolute z-50 right-0 mt-0 min-w-44 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-opacity-30 focus:outline-none *:font-libre"
                 >
                   <div className="flex justify-evenly items-center relative pt-1">
-                    {" "}
                     <motion.div
                       initial={{ opacity: 0, scale: 0.5 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -409,7 +414,7 @@ const NavBar = () => {
                       {user?.profilePicture ? (
                         <img
                           src={user.profilePicture}
-                          className=" object-cover rounded-full size-12 "
+                          className="object-cover rounded-full size-12"
                         />
                       ) : (
                         <FontAwesomeIcon
@@ -421,7 +426,7 @@ const NavBar = () => {
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-black-800 "
+                      className="text-black dark:text-white"
                     >
                       <motion.div
                         initial={{ opacity: 0, x: -20 }}
@@ -431,21 +436,21 @@ const NavBar = () => {
                       >
                         {user.username.slice(0, 10)}
                       </motion.div>
-                      <ul className="text-xs text-blue-500 font-libre">
+                      <ul className="text-xs text-blue-500 dark:text-blue-300 font-libre">
                         <li>Free</li>
                         <li>online</li>
                       </ul>
                     </motion.div>
                   </div>
 
-                  <hr className="mt-3" />
-                  <div className="py-1 *:">
+                  <hr className="mt-3 dark:border-gray-600" />
+                  <div className="py-1">
                     <motion.button
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                       role="menuitem"
                     >
                       <Link to="/dashboard/profile">Edit Profile</Link>
@@ -455,28 +460,18 @@ const NavBar = () => {
                       animate={{ opacity: 1, x: 0 }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                      role="menuitem"
-                    >
-                      Settings
-                    </motion.button>
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                       role="menuitem"
                     >
                       Earnings
                     </motion.button>
-                    <hr className="my-1" />
+                    <hr className="my-1 dark:border-gray-600" />
                     <motion.button
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-red-500 hover:bg-gray-100 hover:text-gray-900"
+                      className="block px-4 py-2 text-sm text-red-500 dark:text-red-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                       role="menuitem"
                       onClick={handleSignOut}
                     >
@@ -490,43 +485,23 @@ const NavBar = () => {
         </div>
       </nav>
 
-      {/* Additional content or search functionality */}
+      {/* <------------------------------------------------Additional content or search functionality--------------------------------------------------------> */}
       <div
         style={{ paddingTop: navbarHeight }}
-        className="flex items-center p-4 ml-auto space-x-4 bg-gray-800 place-content-center"
+        className={`flex items-center  space-x-4 bg-gray-800 place-content-center ${
+          isSuccess ? " visible" : "hidden"
+        } `}
       >
-        <div className="relative text-gray-600 focus-within:text-gray-400 w-[70rem]">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-            <FontAwesomeIcon icon={faSearch} className="text-lg" />
-          </span>
-          <input
-            type="search"
-            className="w-full py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none focus:border-green-500"
-            placeholder="Search Movies & Tv Shows/ webSeries"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-          />
-        </div>
-
-        <div className="mt-2 ">
-          <button
-            className="relative inline-flex items-center justify-center p-0.5 mb-2 me-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-cyan-500 to-blue-500 group-hover:from-cyan-500 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:outline-none focus:ring-cyan-200 dark:focus:ring-cyan-800 "
-            onClick={handleSearch}
-          >
-            <span className="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0">
-              Search
-            </span>
-          </button>
-        </div>
+        {/*  <------------------------------------------search results miniDisplay--------------------------------------------------> */}
         {isLoading && <div className="text-white">Loading...</div>}
         {!isSearchResultsPage &&
           isSuccess &&
           !isMovieLinkClicked &&
           Data.length > 0 &&
-          !isLoading && (
+          !isLoading &&
+          !isOffCanvasOpen && (
             <motion.div
-              className={`right-0 border-t-0 ml-0 top-[11rem] z-50 w-96 opacity-90 absolute  ${
+              className={`right-0 border-t-0 ml-0 l:w-full l:h-[28rem]  l:top-[4rem] md:top-[5rem] z-50 md:w-[26rem] opacity-90 absolute  scroll-smooth scroll-p-0 md:h-[32rem] overflow-y-auto ${
                 isScrolled ? "hidden" : ""
               }`}
               initial={{ opacity: 0, y: -20 }}
@@ -545,8 +520,8 @@ const NavBar = () => {
                   }
                   onClick={handleMovieLinkClick}
                 >
-                  <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-950 bg-opacity-95">
-                    <li className="block float-left w-full p-3 border-b-2 border-current">
+                  <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-800 bg-opacity-95">
+                    <li className="block float-left w-full p-3 border-b-[1px] border-cyan-400">
                       <div className="float-left inline-block mr-[20px] h-2/4 w-24 overflow-hidden">
                         <img
                           src={movie.Poster}

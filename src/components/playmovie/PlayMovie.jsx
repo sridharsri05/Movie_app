@@ -4,13 +4,14 @@ import MovieCard from "../Cards/MovieCards";
 import { useEffect, useState, useCallback, memo, useMemo } from "react";
 import axios from "axios";
 import CustomCarousel from "../customeCards/CustomCarousel";
+import { motion } from "framer-motion";
 
 const PlayMovie = () => {
   const [movieview, setMovieView] = useState(true);
   const { imdbID } = useParams();
   console.log(imdbID);
 
-  const { data: movieData } = useSearchByidQuery(imdbID);
+  const { data: movieData, isLoading } = useSearchByidQuery(imdbID);
   console.log(movieData, "movie data");
 
   const [relatedMovies, setRelatedMovies] = useState([]);
@@ -130,25 +131,35 @@ const PlayMovie = () => {
     }
   }, []);
 
+  if (isLoading) return <>.....Loading</>;
   console.log(relatedMovies, "check");
   return (
     <>
-      <div className="pt-6 bg-black ">
-        <div className="mx-4 l:h-[15rem]  sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]">
-          {movieview ? (
-            <iframe
-              className="w-full h-full rounded-2xl"
-              src={`https://vidsrc.xyz/embed/movie/${imdbID}`}
-              allowFullScreen
-            ></iframe>
-          ) : (
-            <iframe
-              className="w-full h-full rounded-2xl"
-              src={`https://vidsrc.to/embed/movie/${imdbID}`}
-              allowFullScreen
-            ></iframe>
-          )}
-        </div>
+      <motion.div
+        className="pt-6 bg-black  "
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }} // Start small and transparent
+          animate={{ opacity: 1, scale: 1 }} // Animate to full size and visible
+          transition={{ duration: 0.5 }}
+          className="mx-4 l:h-[15rem]  sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem] mt-[4rem]"
+        >
+          <motion.iframe
+            className="w-full h-full rounded-2xl"
+            src={
+              movieview
+                ? `https://vidsrc.xyz/embed/movie/${imdbID}`
+                : `https://vidsrc.to/embed/movie/${imdbID}`
+            }
+            initial={{ opacity: 0 }} // Ensure iframe is hidden initially
+            animate={{ opacity: 1 }} // Fade in the iframe
+            transition={{ duration: 0.5, delay: 0.3 }}
+            allowFullScreen
+          ></motion.iframe>
+        </motion.div>
 
         <div className="flex justify-center s:mb-4 md:mb-0 ">
           <button
@@ -162,7 +173,12 @@ const PlayMovie = () => {
 
         {/* Left Side - Sticky Image */}
         <div className="relative md:flex  mx-3 px-2 rounded-md">
-          <div className="flex-grow-0 sm:basis-full  h-full flex-shrink-0 md:basis-1/4 md:max-w-[17rem]  l:max-w-screen-md px-1 relative w-full md:sticky top-0 md:h-screen sm:w-1/2 md:w-1/3 lg:w-1/4">
+          <motion.div
+            className="flex-grow-0 sm:basis-full  h-full flex-shrink-0 md:basis-1/4 md:max-w-[17rem]  l:max-w-screen-md px-1 relative w-full md:sticky top-0 md:h-screen sm:w-1/2 md:w-1/3 lg:w-1/4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
             <div className="mb-8 z-10 w-full">
               <div className="relative flex w-full">
                 <div className="flex-1 px-0 relative w-full l:pb-[20rem]  ">
@@ -241,15 +257,25 @@ const PlayMovie = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Side - Scrollable Content */}
           <div className="sm:basis-full  flex-shrink-0  lg:flex-grow-0 md:basis-3/4 max-w-full px-3  sm:w-full md:w-2/3 lg:w-3/4 l:mt-4  ">
-            <div className="text-white md:text-left lg:text-4xl font-extrabold leading-[56px] mt-0 mr-0 mb-2 font-libre s:text-xl s:text-center l:text-2xl">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-white md:text-left lg:text-4xl font-extrabold leading-[56px] mt-0 mr-0 mb-2 font-libre s:text-xl s:text-center l:text-2xl"
+            >
               {movieData?.Title}
-            </div>
+            </motion.div>
 
-            <div className="text-sm font-medium leading-6 tracking-normal text-white text-opacity-75">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-sm font-medium leading-6 tracking-normal text-white text-opacity-75"
+            >
               <div className="flex flex-wrap md:justify-start md:items-center gap-x-1 s:justify-center">
                 <span className="mr-3">
                   {movieData?.Year} - {minsToHours(movieData?.Runtime)}
@@ -269,26 +295,41 @@ const PlayMovie = () => {
                   {movieData?.Genre}
                 </div>
               </div>
-              <p className="text-[16px] leading-6 mt-2 mb-4 max-w-2xl">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+                className="text-[16px] leading-6 mt-2 mb-4 max-w-2xl"
+              >
                 {movieData?.Plot}
-              </p>
+              </motion.p>
               <div className="text-[16px] leading-6 relative w-full mb-20">
-                <div className="flex">
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="flex"
+                >
                   <span className="inline-block flex-grow-0 flex-shrink w-40 text-white text-[16px] leading-6">
                     Starring
                   </span>
                   <span className="text-white text-opacity-75 text-[16px] leading-6 relative w-full">
                     {movieData?.Actors}
                   </span>
-                </div>
-                <div className="flex">
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                  className="flex"
+                >
                   <span className="text-white text-opacity-75 inline-block flex-grow-0 flex-shrink-0 s:w-[6.4rem] m:w-[6.8rem] l:w-[7.1rem] lg:w-[8.1rem]">
                     Directed by
                   </span>
                   <span className="text-[16px] leading-6 opacity-100 cursor-pointer inline-block relative transition-opacity duration-300 font-normal">
                     {movieData?.Director}
                   </span>
-                </div>
+                </motion.div>
                 <div className="my-4 border-b border-gray-700"></div>
                 <div>
                   <div className="text-2xl text-white mb-1">You May Also Like</div>
@@ -296,10 +337,10 @@ const PlayMovie = () => {
                 </div>
                 {error && <div className="text-red-500">{error}</div>}
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </>
   );
 };

@@ -19,7 +19,8 @@ import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
 import { Spin } from "antd";
-import {Apis} from '../api/api'
+import { Apis } from "../api/api";
+import NavBarCarousel from "./customeCards/NavBarCarousel";
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
   const { greeting, showGreeting } = useGreeting();
@@ -30,7 +31,7 @@ const Dashboard = () => {
   const [showMore, setShowMore] = useState(false);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-  const { data, isLoading } = useGetNewlyAddedMovies2Query(currentPage);
+  const { data, isLoading, error } = useGetNewlyAddedMovies2Query(currentPage);
   const { data: recent } = useGetRecentlyAddedMoviesQuery(page);
 
   // console.log(data, "de");
@@ -88,6 +89,15 @@ const Dashboard = () => {
       skeletonCards.push(<MovieCardSkeleton key={i} />);
     }
   }
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen mt-[4rem] p-4 text-center text-red-500">
+  //       <h2 className="text-2xl">An error occurred while fetching movies.</h2>
+  //       <p>{error.error || "Please try again later or might be cors origin issue."}</p>
+  //     </div>
+  //   );
+  // }
+
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: {
@@ -121,8 +131,8 @@ const Dashboard = () => {
     ));
 
   return (
-    <div className="min-h-screen ">
-      {/* <NavBar /> */}
+    <div className="min-h-screen relative ">
+      <NavBarCarousel />
       <main
         className={`container mx-auto  bg-transparent mt-8 p-4 sm:p-8 lg:p-12 ${
           !showGreeting && "hidden"
@@ -138,9 +148,9 @@ const Dashboard = () => {
         )}
       </main>
 
-      <div className="p-4 bg-gray-800 ">
+      <div className="p-4 bg-gray-800   ">
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
-          🔥New Releases
+          🔥Latest Added
         </header>
 
         <InfiniteScroll

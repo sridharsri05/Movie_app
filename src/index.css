@@ -34,3 +34,12 @@ body {
     -webkit-transition: all .70s ease-in-out;
 
 }
+
+/* Hide clear button */
+.hide-clear-button::-webkit-search-cancel-button {
+    @apply hidden;
+}
+
+.hide-clear-button::-ms-clear {
+    @apply hidden;
+}

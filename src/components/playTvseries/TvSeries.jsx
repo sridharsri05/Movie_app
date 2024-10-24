@@ -187,7 +187,7 @@ function TvSeries() {
   console.log(seasons, "season and epi");
   return (
     <>
-      <div className="pt-6 bg-black">
+      <div className="pt-6 bg-black mt-[4rem]">
         {season && epi && (
           <div
             className="mx-4 l:h-[15rem] sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]"

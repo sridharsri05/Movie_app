@@ -1,6 +1,6 @@
 const MovieCardSkeleton = () => {
   return (
-    <article className="border-0 relative">
+    <article className="border-0 relative ">
       <div className="max-w-sm rounded overflow-hidden animate-pulse">
         <div className="relative overflow-hidden">
           <div className="w-full h-72 bg-gray-300"></div>

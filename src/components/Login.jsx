@@ -57,13 +57,13 @@ const Login = () => {
         const { error } = response.payload;
         dispatch(setLoading(false));
 
-        if (error && error?.message) {
-          toast.error(error?.message, {
+        if (error && error === "Network Error") {
+          toast.error("Cors Orgin error", {
             position: "top-right",
             autoClose: 2000,
           });
         } else {
-          toast.error(error, {
+          toast.error(error.error.message, {
             position: "top-right",
             autoClose: 2000,
           });

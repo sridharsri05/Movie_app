@@ -36,11 +36,47 @@ export default {
       gridColumn: {
         'span-1.5': 'span 1.5 / span 1.5',
       },
+      perspective: {
+        none: 'none',
+        250: '250px',
+        500: '500px',
+        1000: '1000px',
+        1500: '1500px',
+      },
     },
 
   },
   plugins: [
+    function ({ addUtilities }) {
+      const newUtilities = {
+        '.perspective-none': {
+          perspective: 'none',
+        },
+        '.perspective-250': {
+          perspective: '250px',
+        },
+        '.perspective-500': {
+          perspective: '500px',
+        },
+        '.perspective-1000': {
+          perspective: '1000px',
+        },
+        '.perspective-1500': {
+          perspective: '1500px',
+        },
+        '.perspective-origin-center': {
+          'perspective-origin': 'center',
+        },
+        '.perspective-origin-top': {
+          'perspective-origin': 'top',
+        },
+        '.perspective-origin-bottom': {
+          'perspective-origin': 'bottom',
+        },
+      };
 
+      addUtilities(newUtilities);
+    },
 
   ],
 }

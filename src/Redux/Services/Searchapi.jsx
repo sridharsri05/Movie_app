@@ -9,16 +9,18 @@ export const Tmd_API = createApi({
     baseUrl: Apis.TMDB,
   }),
   endpoints: (builder) => ({
-    searchMoviesSeries: builder.query({
-      query: (query) => ({
-        url: `search/multi`,
+    // New endpoint for fetching popular movies
+    fetchPopularMovies: builder.query({
+      query: (page = 1) => ({
+        url: `movie/popular`,
         params: {
-          query: query,
           api_key: Apis.apiKey,
           language: "en-US",
+          page: page,
         },
       }),
     }),
   }),
 });
-export const { useSearchMoviesSeriesQuery } = Tmd_API;
+
+export const { useFetchPopularMoviesQuery } = Tmd_API;
