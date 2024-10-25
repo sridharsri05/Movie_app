@@ -23,10 +23,13 @@ const NavBarCarousel = () => {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const slideInterval = 6000;
 
   const [showingCards, setShowingCards] = useState(null);
   // console.log(data, "dfff");
-  console.log(movies, "d");
+  // console.log(movies, "d");
+
   useEffect(() => {
     const fetchMovies = async () => {
       if (data && data.results) {
@@ -76,8 +79,10 @@ const NavBarCarousel = () => {
               };
             })
           );
-
-          setMovies(moviesWithDetails);
+          const uniqueMovies = Array.from(
+            new Map(moviesWithDetails.map((movie) => [movie.imdb_id, movie])).values()
+          );
+          setMovies(uniqueMovies);
           setSelectedMovie(moviesWithDetails[0]);
         } catch (error) {
           console.error("Error fetching movies:", error);
@@ -91,7 +96,6 @@ const NavBarCarousel = () => {
   const handleSlideChangeTransitionStart = (swiper) => {
     const activeIndex = swiper.realIndex; // Get the active index properly
     setSelectedMovie(movies[activeIndex]);
-    // console.log(swiper, "activeindexes");
   };
   useEffect(() => {
     const handleResize = () => {
@@ -119,7 +123,7 @@ const NavBarCarousel = () => {
 
   return (
     <>
-      {movies.length > 0 && (
+      {movies?.length > 0 && (
         <motion.div
           className={`flex s:flex-col s:p-2  l:items-center md:items-stretch  lg:items-end lg:py-6 backdrop:blur-sm lg:justify-evenly  l:justify-center l:p-1 l:min-h-[400px]  md:min-h-[95vh] w-full bg-cover bg-center z-30 l:flex l:flex-col lg:flex-row  overflow-hidden transition-transform transform scale-100 duration-300 ease-in-out `}
           style={{
@@ -132,7 +136,7 @@ const NavBarCarousel = () => {
           {/* Left Poster */}
           {/* Movie Information */}
           <motion.div
-            key={selectedMovie?.id}
+            key={selectedMovie?.imdb_id}
             initial={{ opacity: 0, y: -20 }} // Initial state for title
             animate={{ opacity: 1, y: 0 }} // Animation on load
             exit={{ opacity: 0, y: -20 }} // Animation when title changes
@@ -141,7 +145,7 @@ const NavBarCarousel = () => {
           >
             <motion.h2
               className="lg:text-5xl font-gilroy font-thin  l:text-3xl line-clamp-1 "
-              key={selectedMovie?.id}
+              key={`${selectedMovie?.imdb_id}-${new Date().getTime()}`}
               initial={{ opacity: 0, y: -20 }} // Initial state for title
               animate={{ opacity: 1, y: 0 }} // Animation on load for title
               transition={{ duration: 0.6 }}
@@ -178,7 +182,7 @@ const NavBarCarousel = () => {
             <div className=" font-libre text-slate-400">{selectedMovie?.genres}</div>
             <motion.p
               className=" font-gilroy text-slate-400 l:line-clamp-5 md:line-clamp-4"
-              key={selectedMovie?.id}
+              key={selectedMovie?.imdb_id}
               initial={{ opacity: 0, y: 20 }} // Initial state for description
               animate={{ opacity: 1, y: 0 }} // Animation on load for description
               transition={{ duration: 0.6 }} // Duration of the animation
@@ -236,25 +240,23 @@ const NavBarCarousel = () => {
               onSlideChangeTransitionStart={(swiper) =>
                 handleSlideChangeTransitionStart(swiper)
               }
-              pagination={{ clickable: true, type: "progressbar" }}
+              pagination={{ clickable: true, type: "bullets" }}
               modules={[EffectCoverflow, Pagination, Autoplay, Navigation, Mousewheel]}
               className=" w-full lg:max-w-2xl py-8  perspective-1500  md:max-w-[35rem]  l:max-w-md 2xl:max-w-[42rem]"
             >
-              {movies.map((e) => (
-                <>
-                  <SwiperSlide key={e.id}>
-                    <div className=" *:rounded-lg cursor-pointer ">
-                      <motion.img
-                        className=" lg:w-40 lg:h-60 object-cover l:w-32 l:h-30 "
-                        src={`https://image.tmdb.org/t/p/w500/${e.poster_path}`}
-                        alt={e.title}
-                        initial={{ opacity: 0, scale: 0.9 }} // Initial state for image
-                        animate={{ opacity: 1, scale: 1 }} // Animation on load for image
-                        transition={{ duration: 0.6 }} // Duration of the animation
-                      />
-                    </div>
-                  </SwiperSlide>
-                </>
+              {movies.map((e, i) => (
+                <SwiperSlide key={`${e.imdb_id}-${i}`}>
+                  <div className=" *:rounded-lg cursor-pointer ">
+                    <motion.img
+                      className=" lg:w-40 lg:h-60 object-cover l:w-32 l:h-30 "
+                      src={`https://image.tmdb.org/t/p/w500/${e.poster_path}`}
+                      alt={e.title}
+                      initial={{ opacity: 0, scale: 0.9 }} // Initial state for image
+                      animate={{ opacity: 1, scale: 1 }} // Animation on load for image
+                      transition={{ duration: 0.6 }} // Duration of the animation
+                    />
+                  </div>
+                </SwiperSlide>
               ))}
             </Swiper>
           </motion.div>
