@@ -125,7 +125,7 @@ const NavBarCarousel = () => {
     <>
       {movies?.length > 0 && (
         <motion.div
-          className={`flex s:flex-col s:p-2  l:items-center md:items-stretch  lg:items-end lg:py-6 backdrop:blur-sm lg:justify-evenly  l:justify-center l:p-1 l:min-h-[400px]  md:min-h-[95vh] w-full bg-cover bg-center z-30 l:flex l:flex-col lg:flex-row  overflow-hidden transition-transform transform scale-100 duration-300 ease-in-out `}
+          className={`flex s:flex-col s:p-3  l:items-center md:items-stretch  lg:items-end lg:py-6 backdrop:blur-sm lg:justify-evenly  l:justify-center l:p-1 l:min-h-[400px]  md:min-h-[95vh] w-full bg-cover bg-center z-30 l:flex l:flex-col lg:flex-row  overflow-hidden transition-transform transform scale-100 duration-300 ease-in-out `}
           style={{
             backgroundImage: `url(https://image.tmdb.org/t/p/w1280/${selectedMovie?.backdrop_path})`,
           }}
@@ -141,10 +141,10 @@ const NavBarCarousel = () => {
             animate={{ opacity: 1, y: 0 }} // Animation on load
             exit={{ opacity: 0, y: -20 }} // Animation when title changes
             transition={{ duration: 0.5 }} // Duration of the animation
-            className="text-white space-y-4  shrink  l:text-sm l:px-2  l:mt-10 lg:mt-0 lg:me-28 l:max-w-screen-l lg:w-full s:mt-8 *:s:text-base"
+            className="text-white space-y-4 s:mt-12  shrink  l:text-sm l:px-2  l:mt-10 lg:mt-0 lg:me-28 l:max-w-screen-l lg:w-full   "
           >
             <motion.h2
-              className="lg:text-5xl font-gilroy font-thin  l:text-3xl line-clamp-1 "
+              className="lg:text-5xl font-gilroy font-thin s:text-3xl l:text-3xl line-clamp-1 "
               key={`${selectedMovie?.imdb_id}-${new Date().getTime()}`}
               initial={{ opacity: 0, y: -20 }} // Initial state for title
               animate={{ opacity: 1, y: 0 }} // Animation on load for title
@@ -153,12 +153,12 @@ const NavBarCarousel = () => {
               {selectedMovie?.title}
             </motion.h2>
             <div className="bg-gray-400 h-px w-2/4 mb-4"></div>
-            <div className="flex items-center space-x-4  ">
+            <div className="flex items-center space-x-4  s:text-base ">
               <span className=" font-gilroy">
                 {selectedMovie?.release_date?.split("-")[0]} • {selectedMovie?.runtime}{" "}
                 min
               </span>
-              <span className="flex items-center space-x-2">
+              <span className="flex items-center   space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"
@@ -179,9 +179,11 @@ const NavBarCarousel = () => {
                 </span>
               </span>
             </div>
-            <div className=" font-libre text-slate-400">{selectedMovie?.genres}</div>
+            <div className=" font-libre  s:text-base text-slate-400">
+              {selectedMovie?.genres}
+            </div>
             <motion.p
-              className=" font-gilroy text-slate-400 l:line-clamp-5 md:line-clamp-4"
+              className=" font-gilroy s:line-clamp-3   s:text-base text-slate-400 l:line-clamp-5 md:line-clamp-4"
               key={selectedMovie?.imdb_id}
               initial={{ opacity: 0, y: 20 }} // Initial state for description
               animate={{ opacity: 1, y: 0 }} // Animation on load for description
@@ -190,7 +192,7 @@ const NavBarCarousel = () => {
               {selectedMovie?.overview}
             </motion.p>
             {/* Watch Now Button */}
-            <button className="bg-yellow-500 text-black px-6 py-2 rounded flex items-center space-x-2 font-bold">
+            <button className="bg-yellow-500  s:text-base text-black px-6 py-2 rounded flex items-center space-x-2 font-bold">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="1em"
@@ -213,7 +215,7 @@ const NavBarCarousel = () => {
 
           {/* Right Poster */}
           <motion.div
-            className="relative l:hidden md:block lg:min-w-[37rem]  l:min-w-[14rem]  border-[1px_solid_rgba(255,255,255,0.1)] "
+            className="relative s:hidden md:block lg:min-w-[37rem]  l:min-w-[14rem]  border-[1px_solid_rgba(255,255,255,0.1)] "
             initial={{ opacity: 0, scale: 0.9 }} // Initial state for Swiper
             animate={{ opacity: 1, scale: 1 }} // Animation on load
             transition={{ duration: 0.6 }} // Duration of the animation
@@ -240,7 +242,7 @@ const NavBarCarousel = () => {
               onSlideChangeTransitionStart={(swiper) =>
                 handleSlideChangeTransitionStart(swiper)
               }
-              pagination={{ clickable: true, type: "bullets" }}
+              pagination={{ clickable: true }}
               modules={[EffectCoverflow, Pagination, Autoplay, Navigation, Mousewheel]}
               className=" w-full lg:max-w-2xl py-8  perspective-1500  md:max-w-[35rem]  l:max-w-md 2xl:max-w-[42rem]"
             >

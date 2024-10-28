@@ -233,7 +233,7 @@ const NavBar = () => {
           {isOffCanvasOpen && (
             <>
               <motion.div
-                className="fixed inset-0 h-screen bg-black bg-opacity-50 "
+                className="fixed inset-0 h-screen bg-black bg-opacity-50 z-10"
                 onClick={toggleOffCanvas}
                 initial="closed"
                 animate="open"
@@ -255,31 +255,7 @@ const NavBar = () => {
                   </motion.div>
 
                   {/* Off-canvas menu content goes here */}
-                  <div className="relative text-gray-600 focus-within:text-gray-400 mx-auto mt-1 max-w-[15rem]">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                      <FontAwesomeIcon icon={faSearch} className="text-lg" />
-                    </span>
-                    <input
-                      ref={offSetRef}
-                      type="search"
-                      className={`w-full py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none  focus:border-green-500 ${
-                        isLoading ? "hide-clear-button" : ""
-                      } `}
-                      placeholder="Search Movies & Tv Shows..."
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                    />
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
-                      {isLoading && (
-                        <FontAwesomeIcon
-                          icon={faSpinner}
-                          spin
-                          className="text-lg text-cyan-700"
-                        />
-                      )}
-                    </span>
-                  </div>
+
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -342,21 +318,21 @@ const NavBar = () => {
             </Link>
           </div>
           {/* search bar */}
-          <div className="relative text-gray-600 focus-within:text-gray-400 ml-4  3xl:ml-0  lg:grid ">
+          <div className="relative text-gray-600 focus-within:text-gray-400 ml-4  3xl:ml-0  lg:grid  z-0">
             <span className="absolute inset-y-0 left-0 flex items-center pl-2">
               <FontAwesomeIcon icon={faSearch} className="text-lg" />
             </span>
             <input
               type="search"
-              className={`l:focus:w-full l:focus: transition-all l:focus:duration-300 lg:w-full l:focus:ease-linear w-0 py-2 pl-10 pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none  focus:border-green-500 ${
+              className={`s:focus:w-[180px] l:focus:w-[200px]  transition-all duration-700 ease-in-out w-0 lg:w-full lg:focus:w-full py-2 pl-10 md:pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none focus:border-green-500 ${
                 isLoading ? "hide-clear-button" : ""
-              } `}
+              }`}
               placeholder="Search Movies & Tv Shows..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
             />
-            <span className="absolute inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
+            <span className="absolute s:hidden  inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
               {isLoading && (
                 <FontAwesomeIcon
                   icon={faSpinner}
@@ -493,7 +469,9 @@ const NavBar = () => {
         } `}
       >
         {/*  <------------------------------------------search results miniDisplay--------------------------------------------------> */}
-        {isLoading && <div className="text-white">Loading...</div>}
+        {isLoading && (
+          <div className="text-white grid place-content-center">Loading...</div>
+        )}
         {!isSearchResultsPage &&
           isSuccess &&
           !isMovieLinkClicked &&
@@ -501,7 +479,7 @@ const NavBar = () => {
           !isLoading &&
           !isOffCanvasOpen && (
             <motion.div
-              className={`right-0 border-t-0 ml-0 l:w-full l:h-[28rem]  l:top-[4rem] md:top-[5rem] z-50 md:w-[26rem] opacity-90 absolute  scroll-smooth scroll-p-0 md:h-[32rem] overflow-y-auto ${
+              className={`right-0 border-t-0 ml-0 s:hidden md:block l:w-full l:h-[28rem]  l:top-[4rem] md:top-[5rem] z-50 md:w-[26rem] opacity-90 absolute  scroll-smooth scroll-p-0 md:h-[32rem] overflow-y-auto ${
                 isScrolled ? "hidden" : ""
               }`}
               initial={{ opacity: 0, y: -20 }}
