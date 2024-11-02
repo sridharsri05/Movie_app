@@ -43,3 +43,13 @@ body {
 .hide-clear-button::-ms-clear {
     @apply hidden;
 }
+
+
+.swiper-pagination {
+    position: static !important;
+
+}
+
+/* .swiper-pagination-bullet:active {
+    padding-right: 2rem;
+} */

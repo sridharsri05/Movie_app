@@ -41,11 +41,12 @@ const GoogleSignin = () => {
       dispatch(setLoading(false));
     } catch (error) {
       dispatch(setLoading(false));
-      toast.error(error?.error?.message || error, {
+
+      toast.error(error?.message || error.error, {
         position: "top-right",
         autoClose: 2000,
       });
-      console.log(error, "can't signin with google");
+      console.log(error.error, "can't signin with google");
     }
   };
 

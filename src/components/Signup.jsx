@@ -4,10 +4,10 @@ import { setLoading, signUp } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import GoogleSignin from "../utils/GoogleSignin";
-import svg1 from "../../public/avatar-makata-vespa-04-2@2x.png";
-import svg2 from "../../public/avatar-makata-vespa-04-1@2x.png";
-import svg3 from "../../public/akariconsgithubfill.svg";
-import fbsvg from "../../public/bifacebook.svg";
+import svg1 from "/avatar-makata-vespa-04-2@2x.png";
+import svg2 from "/avatar-makata-vespa-04-1@2x.png";
+import svg3 from "/akariconsgithubfill.svg";
+import fbsvg from "/bifacebook.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import Spinner from "../Spinner/Spinner";
@@ -41,8 +41,6 @@ const SignUp = () => {
     dispatch(signUp(formData))
       .unwrap() // Unwraps the result from createAsyncThunk
       .then((response) => {
-        // Additional logic if needed, such as redirecting after successful sign-up
-
         if (response && response.status === "success") {
           dispatch(setLoading(false));
           toast.success(response.message, {

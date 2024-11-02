@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import {
   Autoplay,
@@ -23,99 +23,102 @@ const NavBarCarousel = () => {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const swiperRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const slideInterval = 6000;
 
   const [showingCards, setShowingCards] = useState(null);
   // console.log(data, "dfff");
   // console.log(movies, "d");
 
-  useEffect(() => {
-    const fetchMovies = async () => {
-      if (data && data.results) {
-        try {
-          const movieData = data.results;
+  const fetchMovies = useCallback(async () => {
+    if (data && data.results) {
+      try {
+        const movieData = data.results;
 
-          // Fetch trailers and IMDb IDs
-          const moviesWithDetails = await Promise.all(
-            movieData.map(async (movie) => {
-              // Fetch movie details to get IMDb ID
-              const detailsResponse = await axios.get(
-                `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${Apis.apiKey}&language=en-US`
-              );
-              const releaseDatesResponse = await axios.get(
-                `https://api.themoviedb.org/3/movie/${movie.id}/release_dates?api_key=${Apis.apiKey}`
-              );
+        // Fetch trailers and IMDb IDs
+        const moviesWithDetails = await Promise.all(
+          movieData.map(async (movie) => {
+            // Fetch movie details to get IMDb ID
+            const detailsResponse = await axios.get(
+              `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${Apis.apiKey}&language=en-US`
+            );
+            const releaseDatesResponse = await axios.get(
+              `https://api.themoviedb.org/3/movie/${movie.id}/release_dates?api_key=${Apis.apiKey}`
+            );
 
-              // Get certification for the US
-              const usReleaseData = releaseDatesResponse.data.results.find(
-                (release) => release.iso_3166_1 === "US"
-              );
-              let certification = null;
-              if (usReleaseData && usReleaseData.release_dates.length > 0) {
-                certification = usReleaseData.release_dates[0].certification;
-              }
-              // Get the trailer information
-              const trailerResponse = await axios.get(
-                `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${Apis.apiKey}&language=en-US`
-              );
+            // Get certification for the US
+            const usReleaseData = releaseDatesResponse.data.results.find(
+              (release) => release.iso_3166_1 === "US"
+            );
+            let certification = null;
+            if (usReleaseData && usReleaseData.release_dates.length > 0) {
+              certification = usReleaseData.release_dates[0].certification;
+            }
+            // Get the trailer information
+            const trailerResponse = await axios.get(
+              `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${Apis.apiKey}&language=en-US`
+            );
 
-              // Find the trailer URL
-              const trailer = trailerResponse.data.results.find(
-                (vid) => vid.type === "Trailer"
-              );
-              const genres = detailsResponse.data.genres
-                .map((genre) => genre.name)
-                .join(" • ");
-              return {
-                ...movie,
-                imdb_id: detailsResponse.data.imdb_id,
-                runtime: detailsResponse.data.runtime,
-                genres: genres,
-                certification: certification || "Not Rated",
-                trailerUrl: trailer
-                  ? `https://www.youtube.com/watch?v=${trailer.key}`
-                  : null,
-              };
-            })
-          );
-          const uniqueMovies = Array.from(
-            new Map(moviesWithDetails.map((movie) => [movie.imdb_id, movie])).values()
-          );
-          setMovies(uniqueMovies);
-          setSelectedMovie(moviesWithDetails[0]);
-        } catch (error) {
-          console.error("Error fetching movies:", error);
-        }
+            // Find the trailer URL
+            const trailer = trailerResponse.data.results.find(
+              (vid) => vid.type === "Trailer"
+            );
+            const genres = detailsResponse.data.genres
+              .map((genre) => genre.name)
+              .join(" • ");
+            return {
+              ...movie,
+              imdb_id: detailsResponse.data.imdb_id,
+              runtime: detailsResponse.data.runtime,
+              genres: genres,
+              certification: certification || "Not Rated",
+              trailerUrl: trailer
+                ? `https://www.youtube.com/watch?v=${trailer.key}`
+                : null,
+            };
+          })
+        );
+        const uniqueMovies = Array.from(
+          new Map(moviesWithDetails.map((movie) => [movie.imdb_id, movie])).values()
+        );
+        setMovies(uniqueMovies);
+        setSelectedMovie(moviesWithDetails[0]);
+      } catch (error) {
+        console.error("Error fetching movies:", error);
       }
-    };
-
-    fetchMovies();
+    }
   }, [data]);
 
-  const handleSlideChangeTransitionStart = (swiper) => {
-    const activeIndex = swiper.realIndex; // Get the active index properly
-    setSelectedMovie(movies[activeIndex]);
-  };
   useEffect(() => {
-    const handleResize = () => {
-      const windowWidth = window.innerWidth;
-      if (windowWidth < 320) {
-        setShowingCards(2);
-      } else if (windowWidth < 425) {
-        setShowingCards(3);
-      } else if (windowWidth < 768) {
-        setShowingCards(4);
-      } else if (windowWidth < 1024) {
-        setShowingCards(4);
-      } else {
-        setShowingCards(4);
-      }
-    };
+    fetchMovies();
+  }, [fetchMovies]);
+
+  const handleSlideChangeTransitionStart = useCallback(
+    (swiper) => {
+      const activeIndex = swiper.realIndex; // Get the active index properly
+      setSelectedMovie(movies[activeIndex]);
+    },
+    [movies]
+  );
+
+  const handleResize = useCallback(() => {
+    const windowWidth = window.innerWidth;
+    if (windowWidth < 320) {
+      setShowingCards(2);
+    } else if (windowWidth < 425) {
+      setShowingCards(3);
+    } else if (windowWidth < 768) {
+      setShowingCards(4);
+    } else if (windowWidth < 1024) {
+      setShowingCards(4);
+    } else {
+      setShowingCards(4);
+    }
+  }, []);
+
+  useEffect(() => {
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => window.removeEventListener("resize", handleResize);
-  }, [showingCards]);
+  }, [handleResize]);
 
   if (isLoading) return <> Loading..</>;
   if (error) return <div>Error fetching data</div>;
@@ -135,16 +138,18 @@ const NavBarCarousel = () => {
         >
           {/* Left Poster */}
           {/* Movie Information */}
+
+          <div className="absolute inset-0 bg-black opacity-35 z-0"></div>
           <motion.div
             key={selectedMovie?.imdb_id}
             initial={{ opacity: 0, y: -20 }} // Initial state for title
             animate={{ opacity: 1, y: 0 }} // Animation on load
             exit={{ opacity: 0, y: -20 }} // Animation when title changes
             transition={{ duration: 0.5 }} // Duration of the animation
-            className="text-white space-y-4 s:mt-12  shrink  l:text-sm l:px-2  l:mt-10 lg:mt-0 lg:me-28 l:max-w-screen-l lg:w-full   "
+            className="text-white space-y-4 s:mt-12  shrink  l:text-sm l:px-2  l:mt-10 lg:mt-0 lg:me-28 l:max-w-screen-l lg:w-full z-10  "
           >
             <motion.h2
-              className="lg:text-5xl font-gilroy font-thin s:text-3xl l:text-3xl line-clamp-1 "
+              className="lg:text-5xl font-gilroy font-thin s:text-3xl l:text-3xl line-clamp-1"
               key={`${selectedMovie?.imdb_id}-${new Date().getTime()}`}
               initial={{ opacity: 0, y: -20 }} // Initial state for title
               animate={{ opacity: 1, y: 0 }} // Animation on load for title
@@ -215,7 +220,7 @@ const NavBarCarousel = () => {
 
           {/* Right Poster */}
           <motion.div
-            className="relative s:hidden md:block lg:min-w-[37rem]  l:min-w-[14rem]  border-[1px_solid_rgba(255,255,255,0.1)] "
+            className="relative s:hidden md:block lg:min-w-[37rem]  l:min-w-[14rem]  border-[1px_solid_rgba(255,255,255,0.1)] z-10 "
             initial={{ opacity: 0, scale: 0.9 }} // Initial state for Swiper
             animate={{ opacity: 1, scale: 1 }} // Animation on load
             transition={{ duration: 0.6 }} // Duration of the animation
@@ -267,4 +272,4 @@ const NavBarCarousel = () => {
     </>
   );
 };
-export default NavBarCarousel;
+export default React.memo(NavBarCarousel);

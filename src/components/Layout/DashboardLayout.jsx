@@ -1,6 +1,8 @@
 import { Outlet } from "react-router-dom";
-import NavBar from "../NavBar";
-import Footer from "../Footer";
+
+import React from "react";
+const NavBar = React.lazy(() => import("../NavBar"));
+const Footer = React.lazy(() => import("../Footer"));
 
 const DashboardLayout = () => {
   return (

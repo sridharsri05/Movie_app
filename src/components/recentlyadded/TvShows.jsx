@@ -21,7 +21,7 @@ import { Apis } from "../../api/api";
 
 //<=======================----------------------------------------------------------------------------------------------------------->
 
-export const TvShows = () => {
+const TvShows = () => {
   const tvShows = useSelector(allShows);
 
   const currentPage = useSelector(currentPageSelector);
@@ -168,6 +168,8 @@ export const TvShows = () => {
     </div>
   );
 };
+
+export default TvShows;
 const container = {
   hidden: { opacity: 1, scale: 0 },
   visible: {
