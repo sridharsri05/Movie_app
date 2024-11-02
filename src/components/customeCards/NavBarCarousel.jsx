@@ -139,7 +139,7 @@ const NavBarCarousel = () => {
           {/* Left Poster */}
           {/* Movie Information */}
 
-          <div className="absolute inset-0 bg-black opacity-35 z-0"></div>
+          <div className="absolute inset-0 bg-black opacity-10 z-0"></div>
           <motion.div
             key={selectedMovie?.imdb_id}
             initial={{ opacity: 0, y: -20 }} // Initial state for title
