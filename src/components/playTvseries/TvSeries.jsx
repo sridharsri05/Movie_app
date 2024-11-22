@@ -5,6 +5,7 @@ import CustomCarousel from "../customeCards/CustomCarousel";
 import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
 import { DropdownSeason } from "./DropdownSeason";
 import React from "react";
+import { Apis } from "../../api/api";
 
 function TvSeries() {
   const [movieview, setMovieView] = useState(true);
@@ -14,7 +15,6 @@ function TvSeries() {
   const [relatedMovies, setRelatedMovies] = useState([]);
   const [error, setError] = useState(null);
   const { data: SeriesData } = useSearchByidQuery(imdbID);
-  const apiKey = "6a42205b97295fef4aea5d2775c755ba";
   const navigate = useNavigate();
   const iframeRef = useRef(null);
 
@@ -49,7 +49,7 @@ function TvSeries() {
         `https://api.themoviedb.org/3/find/${imdbID}`,
         {
           params: {
-            api_key: apiKey,
+            api_key: Apis.apiKey,
             external_source: "imdb_id",
           },
         }
@@ -64,7 +64,7 @@ function TvSeries() {
         `https://api.themoviedb.org/3/tv/${series.id}`,
         {
           params: {
-            api_key: apiKey,
+            api_key: Apis.apiKey,
           },
         }
       );
@@ -87,7 +87,7 @@ function TvSeries() {
       try {
         // Fetch related movies by title and genres
         const titleResponse = await axios.get(
-          `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encodeURIComponent(
+          `https://api.themoviedb.org/3/search/tv?api_key=${Apis.apiKey}&query=${encodeURIComponent(
             title
           )}`
         );
@@ -95,7 +95,7 @@ function TvSeries() {
         const genreResponse =
           genreIds.length > 0
             ? await axios.get(
-                `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${genreIds.join(
+                `https://api.themoviedb.org/3/discover/tv?api_key=${Apis.apiKey}&with_genres=${genreIds.join(
                   ","
                 )}`
               )
@@ -113,7 +113,7 @@ function TvSeries() {
         setError("Failed to load related movies. Please try again later.");
       }
     },
-    [apiKey]
+    [Apis.apiKey]
   );
 
   const fetchExternalIds = useCallback(
@@ -123,7 +123,7 @@ function TvSeries() {
           `https://api.themoviedb.org/3/tv/${movieId}/external_ids`,
           {
             params: {
-              api_key: apiKey,
+              api_key: Apis.apiKey,
             },
           }
         );
@@ -133,7 +133,7 @@ function TvSeries() {
         return null;
       }
     },
-    [apiKey]
+    [Apis.apiKey]
   );
 
   const processMoviesWithExternalIds = useCallback(
@@ -183,8 +183,8 @@ function TvSeries() {
       iframeRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [imdbID, HideButton]);
-  console.log(seriesData, "ser_d");
-  console.log(seasons, "season and epi");
+  // console.log(seriesData, "ser_d");
+  // console.log(seasons, "season and epi");
   return (
     <>
       <div className="pt-6 bg-black mt-[4rem]">
@@ -214,9 +214,9 @@ function TvSeries() {
         {/* Left Side - Sticky Image */}
         <div className="relative md:flex mx-3 px-2 rounded-md">
           <div className="flex-grow-0 sm:basis-full h-full flex-shrink-0 md:basis-1/4 md:max-w-[17rem] l:max-w-screen-md px-1 relative w-full md:sticky top-0  sm:w-1/2 md:w-1/3 lg:w-1/4">
-            <div className="mb-8 w-full">
+            <div className="s:mb-4 l:mb-8 w-full md:mb-0 xl:mb-8 ">
               <div className="relative flex w-full">
-                <div className="flex-1 px-0 relative w-full l:pb-[20rem]">
+                <div className="flex-1 px-0 relative w-full l:pb-[20rem] md:pb-[14rem] lg:pb-[20rem]">
                   <img
                     className="absolute s:relative l:absolute s:mt-2 top-0 left-0 object-cover s:h-[20rem] w-full h-full md:h-auto md:max-h-screen"
                     src={
@@ -230,7 +230,7 @@ function TvSeries() {
               </div>
             </div>
             {/*----------------------------> here u need to create that buttons <--------------------*/}
-            <div className="grid grid-cols-3 gap-3 text-white md:mt-[7rem] md:mb-5">
+            <div className="grid grid-cols-3 gap-2 text-white md:mt-[4rem] xl:mt-[7rem] ">
               {HideButton && (
                 <button
                   className="col-span-3 bg-[#ffff13] font-libre  text-black font-bold py-2 rounded flex items-center justify-center"
@@ -361,10 +361,10 @@ function TvSeries() {
                   </span>
                 </div>
                 <div className="flex">
-                  <span className="text-white text-opacity-75 inline-block flex-grow-0 flex-shrink-0 s:w-[6.4rem] m:w-[6.8rem] l:w-[7.1rem] lg:w-[8.1rem]">
+                  <span className="text-white  inline-block flex-grow-0 flex-shrink-0 s:w-[6.4rem] m:w-[6.8rem] md:w-[7.6rem] lg:w-[8.1rem]">
                     Directed by
                   </span>
-                  <span className="text-[16px] leading-6 opacity-100 cursor-pointer inline-block relative transition-opacity duration-300 font-normal">
+                  <span className="text-[16px] leading-6 opacity-100 cursor-pointer  xl:ml-2 inline-block relative transition-opacity duration-300 font-normal">
                     {SeriesData?.Director}
                   </span>
                 </div>
@@ -372,14 +372,16 @@ function TvSeries() {
                 {seriesData?.id ? (
                   <DropdownSeason seriesId={seriesData.id} />
                 ) : (
-                  <p>Loading or no data available...</p>
+                  <p>Loading or no data available... change dns to load data</p>
                 )}
 
                 <div className="my-4 border-b border-gray-700"></div>
-                <div>
-                  <div className="text-2xl text-white mb-1">You May Also Like</div>
-                  <CustomCarousel items={relatedMovies} />
-                </div>
+                {relatedMovies.length > 0 && (
+                  <div>
+                    <div className="text-2xl text-white mb-1">You May Also Like</div>
+                    <CustomCarousel items={relatedMovies} />
+                  </div>
+                )}
                 {error && <div className="text-red-500">{error}</div>}
               </div>
             </div>

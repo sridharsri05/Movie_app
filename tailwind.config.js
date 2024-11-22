@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import { Variants } from 'antd/es/config-provider';
+import { extend } from 'lodash';
 import defaultTheme from 'tailwindcss/defaultTheme';
 
 
@@ -18,6 +20,12 @@ export default {
         lightslategray: "#798995",
         darkslategray: "#414042",
         aliceblue: "#e2eef5",
+      },
+      scrollSnapType: {
+        x: "x mandatory",
+      },
+      scrollSnapAlign: {
+        start: "start",
       },
       borderRadius: {
         "21xl": "40px",
@@ -79,4 +87,10 @@ export default {
     },
 
   ],
+  Variants:{
+    extend:{
+      scrollSnapType: ["responsive"],
+      scrollSnapAlign: ["responsive"],
+    }
+  }
 }

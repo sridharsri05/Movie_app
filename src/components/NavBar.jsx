@@ -226,8 +226,8 @@ const NavBar = () => {
           {/* Logo or Brand (centered) */}
           <Link
             to="/dashboard"
-            className="mx-auto xl:text-4xl lg:ml-3 xl:ml-0 2xl:ml-2 font-bold text-white font-libre lg:mx-0 hover:text-yellow-400  text-sm sm:text-base md:text-lg lg:text-xl"
-          >
+            className="mx-auto xl:text-4xl lg:ml-3 xl:ml-0 2xl:ml-2 font-bold text-white font-libre lg:mx-0   text-sm sm:text-base md:text-lg lg:text-xl hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-500  hover:via-green-400  hover:via-purple-500 hover:via-pink-500 hover:to-green-500 transition-all duration-700 ease-in-out "
+         >
             MovieNexus
           </Link>
           {isOffCanvasOpen && (

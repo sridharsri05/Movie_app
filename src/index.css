@@ -49,7 +49,14 @@ body {
     position: static !important;
 
 }
-
+/* for customdropdown scrollbar width hide */
+.hide-scrollbar {
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+  }
+  
 /* .swiper-pagination-bullet:active {
     padding-right: 2rem;
 } */

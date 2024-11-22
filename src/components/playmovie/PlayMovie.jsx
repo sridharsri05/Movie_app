@@ -5,7 +5,8 @@ import { useEffect, useState, useCallback, memo, useMemo } from "react";
 import axios from "axios";
 import CustomCarousel from "../customeCards/CustomCarousel";
 import { motion } from "framer-motion";
-
+import Spinner from "../../Spinner/Spinner";
+import { Apis } from "../../api/api";
 const PlayMovie = () => {
   const [movieview, setMovieView] = useState(true);
   const { imdbID } = useParams();
@@ -44,7 +45,7 @@ const PlayMovie = () => {
 
   const fetchRelatedMovies = useCallback(
     async (title, genres) => {
-      const apiKey = "6a42205b97295fef4aea5d2775c755ba";
+      
       const genreNames = genres.split(", ").map((name) => name.trim());
       const genreIds = genreNames
         .map((name) => genreNameToIdMap[name])
@@ -52,13 +53,13 @@ const PlayMovie = () => {
 
       try {
         const titleResponse = await axios.get(
-          `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${title}`
+          `https://api.themoviedb.org/3/search/movie?api_key=${Apis.apiKey}&query=${title}`
         );
 
         const genreResponse =
           genreIds.length > 0
             ? await axios.get(
-                `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${genreIds.join(
+                `https://api.themoviedb.org/3/discover/movie?api_key=${Apis.apiKey}&with_genres=${genreIds.join(
                   ","
                 )}`
               )
@@ -131,7 +132,13 @@ const PlayMovie = () => {
     }
   }, []);
 
-  if (isLoading) return <>.....Loading</>;
+  if (isLoading)
+    return (
+      <div className="h-screen flex justify-center items-center">
+        {" "}
+        <Spinner />
+      </div>
+    );
   console.log(relatedMovies, "check");
   return (
     <>
@@ -152,7 +159,7 @@ const PlayMovie = () => {
             src={
               movieview
                 ? `https://vidsrc.xyz/embed/movie/${imdbID}`
-                : `https://vidsrc.to/embed/movie/${imdbID}`
+                : `https://vidsrc.cc/v2/embed/movie/${imdbID}?autoPlay=false`
             }
             initial={{ opacity: 0 }} // Ensure iframe is hidden initially
             animate={{ opacity: 1 }} // Fade in the iframe
@@ -174,7 +181,7 @@ const PlayMovie = () => {
         {/* Left Side - Sticky Image */}
         <div className="relative md:flex  mx-3 px-2 rounded-md">
           <motion.div
-            className="flex-grow-0 sm:basis-full  h-full flex-shrink-0 md:basis-1/4 md:max-w-[17rem]  l:max-w-screen-md px-1 relative w-full md:sticky top-0 md:h-screen sm:w-1/2 md:w-1/3 lg:w-1/4"
+            className="flex-grow-0 sm:basis-full  h-full flex-shrink-0 md:basis-1/4 md:max-w-[17rem]  l:max-w-screen-md px-1 relative w-full md:sticky top-0 md:h-full sm:w-1/2 md:w-1/3 lg:w-1/4"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
@@ -190,7 +197,7 @@ const PlayMovie = () => {
                 </div>
               </div>
               {/*----------------------------> here u need to create that buttons <--------------------*/}
-              <div className="grid grid-cols-3 gap-3 text-white md:mt-[7rem] md:mb-5">
+              <div className="grid grid-cols-3 gap-2 text-white md:mt-[6rem] md:mb-5">
                 <button className="col-span-2 bg-gray-800  py-2 rounded flex items-center justify-center hover:bg-gray-700">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -323,19 +330,24 @@ const PlayMovie = () => {
                   transition={{ duration: 0.5, delay: 0.8 }}
                   className="flex"
                 >
-                  <span className="text-white text-opacity-75 inline-block flex-grow-0 flex-shrink-0 s:w-[6.4rem] m:w-[6.8rem] l:w-[7.1rem] lg:w-[8.1rem]">
+                  <span className="text-white inline-block flex-grow-0 flex-shrink-0 s:w-[6.4rem] m:w-[6.8rem] l:w-[7.1rem] lg:w-[8.1rem]">
                     Directed by
                   </span>
-                  <span className="text-[16px] leading-6 opacity-100 cursor-pointer inline-block relative transition-opacity duration-300 font-normal">
+                  <span className="text-[16px] lg:ml-2 leading-6 opacity-100 cursor-pointer inline-block relative transition-opacity duration-300 font-normal">
                     {movieData?.Director}
                   </span>
                 </motion.div>
                 <div className="my-4 border-b border-gray-700"></div>
-                <div>
-                  <div className="text-2xl text-white mb-1">You May Also Like</div>
-                  <CustomCarousel items={relatedMovies} />
-                </div>
-                {error && <div className="text-red-500">{error}</div>}
+                {relatedMovies.length > 0 && (
+                  <div>
+                    <div className="text-2xl text-white mb-1">You May Also Like</div>
+                    <CustomCarousel items={relatedMovies} />
+                  </div>
+                )}
+
+                {error && (
+                  <div className="text-red-500">{`${error} change dns or proxy to view `}</div>
+                )}
               </div>
             </motion.div>
           </div>

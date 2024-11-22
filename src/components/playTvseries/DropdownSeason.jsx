@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { DropdownCarousel } from "../customeCards/DropdownCarousel";
+import { Apis } from "../../api/api";
 
 export const DropdownSeason = ({ seriesId }) => {
   const [seasons, setSeasons] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(null);
   const [episodes, setEpisodes] = useState([]);
-  const apiKey = "6a42205b97295fef4aea5d2775c755ba";
+
 
   useEffect(() => {
     axios
-      .get(`https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}`)
+      .get(`https://api.themoviedb.org/3/tv/${seriesId}?api_key=${Apis.apiKey}`)
       .then((response) => {
         const regularSeasons = response.data.seasons.filter(
           (season) => season.season_number > 0
@@ -27,7 +28,7 @@ export const DropdownSeason = ({ seriesId }) => {
     if (selectedSeason) {
       axios
         .get(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedSeason}?api_key=${apiKey}`
+          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedSeason}?api_key=${Apis.apiKey}`
         )
         .then((response) => {
           setEpisodes(response.data.episodes);
@@ -44,7 +45,7 @@ export const DropdownSeason = ({ seriesId }) => {
   return (
     <div className="max-w-screen-3xl p-4 bg-gray-900 rounded-lg shadow-md">
       {/* Dropdown for selecting season */}
-      <div className="relative mb-4 max-w-[19rem] ">
+      <div className="relative mb-4 max-w-[19rem] *:cursor-pointer ">
         <select
           className="block w-full p-3 text-white bg-gray-800 border border-gray-700 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-600 max-h-60 overflow-y-auto"
           onChange={handleSeasonChange}
