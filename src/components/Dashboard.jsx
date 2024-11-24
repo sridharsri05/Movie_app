@@ -22,6 +22,7 @@ import { Spin } from "antd";
 import { Apis } from "../api/api";
 import NavBarCarousel from "./customeCards/NavBarCarousel";
 import SEO from "../Seo/seo";
+
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
   const { greeting, showGreeting } = useGreeting();

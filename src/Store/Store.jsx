@@ -1,5 +1,3 @@
-
-
 import { configureStore } from "@reduxjs/toolkit";
 import { omdbApi, vidsrcApi, vidsrcApi2 } from "../Redux/Services/MovieApi";
 import { rootReducer } from "../Redux/reducers/combineReducer";
@@ -11,7 +9,7 @@ import { persistReducer, persistStore } from "redux-persist";
 const persistConfig = {
   key: "root", // Key to persist the entire store
   storage, // Specify the storage (localStorage or sessionStorage)
-  whitelist: ["search"], // List the reducers you want to persist (e.g. search slice)
+  whitelist: ["search", "movie"], // List the reducers you want to persist (e.g. search slice)
 };
 
 // Create a persisted reducer
