@@ -7,11 +7,15 @@ import { Store, persistor } from "./Store/Store.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PersistGate } from "redux-persist/integration/react";
+import { HelmetProvider } from "react-helmet-async";
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <Provider store={Store}>
     <PersistGate loading={null} persistor={persistor}>
-      <App />
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
       <ToastContainer />
     </PersistGate>
   </Provider>

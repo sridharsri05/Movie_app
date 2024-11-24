@@ -18,6 +18,7 @@ import MovieCardSkeleton from "../Cards/MovieCardSkeleton";
 import MovieCards from "../Cards/MovieCards";
 import { toast } from "react-toastify";
 import { Apis } from "../../api/api";
+import SEO from "../../Seo/seo";
 
 //<=======================----------------------------------------------------------------------------------------------------------->
 
@@ -120,7 +121,12 @@ const TvShows = () => {
   return (
     <div className="min-h-screen ">
       {/* <NavBar /> */}
-
+      <SEO
+        title="Discover Trending TV Series - MovieNexus"
+        description="Explore the best TV series on MovieNexus. Watch top-rated shows and stay updated on your favorites."
+        image="/../public/MovieHub.png"
+        keywords="TV series, trending series, popular shows, MovieNexus"
+      />
       <div className="p-4 bg-gray-800 ">
         <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
           🔥Recently Added
@@ -154,7 +160,7 @@ const TvShows = () => {
             {loading || isLoading ? skeletonCards : movies}
           </motion.section>
           {!showMore && (
-            <div className="text-center my-2">
+            <div className="text-center my-2 relative">
               <button
                 onClick={handleViewMore}
                 className="   hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"

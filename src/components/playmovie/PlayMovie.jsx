@@ -7,6 +7,8 @@ import CustomCarousel from "../customeCards/CustomCarousel";
 import { motion } from "framer-motion";
 import Spinner from "../../Spinner/Spinner";
 import { Apis } from "../../api/api";
+import SEO from "../../Seo/seo";
+
 const PlayMovie = () => {
   const [movieview, setMovieView] = useState(true);
   const { imdbID } = useParams();
@@ -45,7 +47,6 @@ const PlayMovie = () => {
 
   const fetchRelatedMovies = useCallback(
     async (title, genres) => {
-      
       const genreNames = genres.split(", ").map((name) => name.trim());
       const genreIds = genreNames
         .map((name) => genreNameToIdMap[name])
@@ -59,9 +60,9 @@ const PlayMovie = () => {
         const genreResponse =
           genreIds.length > 0
             ? await axios.get(
-                `https://api.themoviedb.org/3/discover/movie?api_key=${Apis.apiKey}&with_genres=${genreIds.join(
-                  ","
-                )}`
+                `https://api.themoviedb.org/3/discover/movie?api_key=${
+                  Apis.apiKey
+                }&with_genres=${genreIds.join(",")}`
               )
             : { data: { results: [] } };
 
@@ -148,6 +149,13 @@ const PlayMovie = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
+        <SEO
+          title={`${movieData?.Title} - Watch Now | MovieNexus`}
+          description={`Watch ${movieData?.Title} (${movieData?.Year}) - ${movieData?.Plot}`}
+          image={movieData?.Poster}
+          keywords={`watch ${movieData?.Title}, ${movieData?.genre} movies, MovieNexus`}
+          url={`https://movienexus-ruddy-nine.vercel.app/dashboard/movie/${imdbID }`}
+        />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }} // Start small and transparent
           animate={{ opacity: 1, scale: 1 }} // Animate to full size and visible

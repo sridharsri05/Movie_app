@@ -6,6 +6,7 @@ import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
 import { DropdownSeason } from "./DropdownSeason";
 import React from "react";
 import { Apis } from "../../api/api";
+import SEO from "../../Seo/seo";
 
 function TvSeries() {
   const [movieview, setMovieView] = useState(true);
@@ -87,17 +88,17 @@ function TvSeries() {
       try {
         // Fetch related movies by title and genres
         const titleResponse = await axios.get(
-          `https://api.themoviedb.org/3/search/tv?api_key=${Apis.apiKey}&query=${encodeURIComponent(
-            title
-          )}`
+          `https://api.themoviedb.org/3/search/tv?api_key=${
+            Apis.apiKey
+          }&query=${encodeURIComponent(title)}`
         );
 
         const genreResponse =
           genreIds.length > 0
             ? await axios.get(
-                `https://api.themoviedb.org/3/discover/tv?api_key=${Apis.apiKey}&with_genres=${genreIds.join(
-                  ","
-                )}`
+                `https://api.themoviedb.org/3/discover/tv?api_key=${
+                  Apis.apiKey
+                }&with_genres=${genreIds.join(",")}`
               )
             : { data: { results: [] } };
 
@@ -150,6 +151,7 @@ function TvSeries() {
             year: movie.first_air_date?.split("-")[0] || "N/A",
             rating: movie.vote_average ? movie.vote_average.toFixed(1) : "N/A",
             imdbId: externalIds?.imdb_id || "N/A",
+            type: movie.media_type || (movie.name ? "series" : "movie"),
           };
         })
       );
@@ -185,9 +187,17 @@ function TvSeries() {
   }, [imdbID, HideButton]);
   // console.log(seriesData, "ser_d");
   // console.log(seasons, "season and epi");
+  console.log(relatedMovies, "custom");
   return (
     <>
       <div className="pt-6 bg-black mt-[4rem]">
+        <SEO
+          title={`${seriesData?.name} - Watch Now | TV Series`}
+          description={`Watch ${SeriesData?.Title} (${SeriesData?.Year}) - ${SeriesData?.Plot}`}
+          image={`https://image.tmdb.org/t/p/w500${seriesData?.poster_path}`}
+          keywords={`watch ${seriesData?.name}, ${SeriesData?.Genre} TV series, trending series, popular shows, MovieNexus`}
+          url={`https://movienexus-ruddy-nine.vercel.app/dashboard/tvSeries/${imdbID}`}
+        />
         {season && epi && (
           <div
             className="mx-4 l:h-[15rem] sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16 3xl:h-[40rem] mb-8 sm:h-[31rem]"

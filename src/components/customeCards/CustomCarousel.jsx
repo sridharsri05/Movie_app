@@ -75,7 +75,12 @@ const CustomCarousel = ({ items }) => {
                   poster={item.poster}
                   year={item.year}
                   rating={item.rating}
-                  link={`/dashboard/movie/${item?.imdbId}`}
+                  // link={`/dashboard/${item?.type}/${item?.imdbId}`}
+                  link={
+                    item.Type === "movie"
+                      ? `/dashboard/movie/${item?.imdbId}`
+                      : `/dashboard/tvSeries/${item?.imdbId}`
+                  }
                 />
               </div>
             ))}

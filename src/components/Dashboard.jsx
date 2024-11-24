@@ -21,6 +21,7 @@ import { toast } from "react-toastify";
 import { Spin } from "antd";
 import { Apis } from "../api/api";
 import NavBarCarousel from "./customeCards/NavBarCarousel";
+import SEO from "../Seo/seo";
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
   const { greeting, showGreeting } = useGreeting();
@@ -129,9 +130,17 @@ const Dashboard = () => {
         />
       </motion.div>
     ));
+  // for seo
+
+  const title = "MovieNexus - Discover Trending Movies";
+  const description =
+    "Explore top-rated and trending movies on MovieNexus. Stay updated with the latest releases and reviews.";
+  const image = "../../public/MovieHub.png";
+  const keywords = "movies, trending movies, top-rated movies, MovieNexus";
 
   return (
     <div className="min-h-screen relative ">
+      <SEO title={title} description={description} image={image} keywords={keywords} />
       <NavBarCarousel />
       <main
         className={`container mx-auto  bg-transparent mt-8 p-4 sm:p-8 lg:p-12 ${
@@ -181,10 +190,10 @@ const Dashboard = () => {
             {loading || isLoading ? skeletonCards : movies}
           </motion.section>
           {!showMore && (
-            <div className="text-center my-2">
+            <div className="text-center my-2  relative">
               <button
                 onClick={handleViewMore}
-                className="   hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"
+                className="hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"
               >
                 View More
               </button>
