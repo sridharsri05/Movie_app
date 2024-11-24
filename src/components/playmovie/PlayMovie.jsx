@@ -93,7 +93,7 @@ const PlayMovie = () => {
         `https://api.themoviedb.org/3/movie/${movieId}/external_ids`,
         {
           params: {
-            api_key: "6a42205b97295fef4aea5d2775c755ba",
+            api_key: Apis.apiKey,
           },
         }
       );
@@ -110,12 +110,14 @@ const PlayMovie = () => {
       const processedMovies = await Promise.all(
         movies.map(async (movie) => {
           const externalIds = await fetchExternalIds(movie.id);
+          const type = movie.release_date ? "movie" : "tvseries";
           return {
             poster: `${imageBaseUrl}${movie.poster_path}`,
             title: movie.title,
             year: movie.release_date.split("-")[0],
             rating: movie.vote_average.toFixed(1),
             imdbId: externalIds ? externalIds.imdb_id : "N/A",
+            type,
           };
         })
       );
@@ -154,7 +156,7 @@ const PlayMovie = () => {
           description={`Watch ${movieData?.Title} (${movieData?.Year}) - ${movieData?.Plot}`}
           image={movieData?.Poster}
           keywords={`watch ${movieData?.Title}, ${movieData?.genre} movies, MovieNexus`}
-          url={`https://movienexus-ruddy-nine.vercel.app/dashboard/movie/${imdbID }`}
+          url={`https://movienexus-ruddy-nine.vercel.app/dashboard/movie/${imdbID}`}
         />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }} // Start small and transparent

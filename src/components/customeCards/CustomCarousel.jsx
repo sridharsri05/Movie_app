@@ -77,7 +77,7 @@ const CustomCarousel = ({ items }) => {
                   rating={item.rating}
                   // link={`/dashboard/${item?.type}/${item?.imdbId}`}
                   link={
-                    item.Type === "movie"
+                    item.type === "movie"
                       ? `/dashboard/movie/${item?.imdbId}`
                       : `/dashboard/tvSeries/${item?.imdbId}`
                   }

@@ -143,6 +143,7 @@ function TvSeries() {
       const processedMovies = await Promise.all(
         movies.map(async (movie) => {
           const externalIds = await fetchExternalIds(movie.id);
+          const type = movie.release_date ? "movie" : "tvseries";
           return {
             poster: movie.poster_path
               ? `${imageBaseUrl}${movie.poster_path}`
@@ -151,7 +152,7 @@ function TvSeries() {
             year: movie.first_air_date?.split("-")[0] || "N/A",
             rating: movie.vote_average ? movie.vote_average.toFixed(1) : "N/A",
             imdbId: externalIds?.imdb_id || "N/A",
-            type: movie.media_type || (movie.name ? "series" : "movie"),
+            type,
           };
         })
       );
