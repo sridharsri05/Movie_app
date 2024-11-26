@@ -7,7 +7,7 @@ import CustomCarousel from "../customeCards/CustomCarousel";
 import { motion } from "framer-motion";
 import Spinner from "../../Spinner/Spinner";
 import { Apis } from "../../api/api";
-import SEO from "../../Seo/seo";
+import Seo from "../../utils/Seo";
 
 const PlayMovie = () => {
   const [movieview, setMovieView] = useState(true);
@@ -151,7 +151,7 @@ const PlayMovie = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <SEO
+        <Seo
           title={`${movieData?.Title} - Watch Now | MovieNexus`}
           description={`Watch ${movieData?.Title} (${movieData?.Year}) - ${movieData?.Plot}`}
           image={movieData?.Poster}
@@ -169,7 +169,7 @@ const PlayMovie = () => {
             src={
               movieview
                 ? `https://vidsrc.xyz/embed/movie/${imdbID}`
-                : `https://vidsrc.cc/v2/embed/movie/${imdbID}?autoPlay=false`
+                : `https://vidsrc.cc/v3/embed/movie/${imdbID}?autoPlay=false`
             }
             initial={{ opacity: 0 }} // Ensure iframe is hidden initially
             animate={{ opacity: 1 }} // Fade in the iframe

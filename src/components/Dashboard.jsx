@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import { Spin } from "antd";
 import { Apis } from "../api/api";
 import NavBarCarousel from "./customeCards/NavBarCarousel";
-import SEO from "../Seo/seo";
+import Seo from "../utils/Seo";
 
 const Dashboard = () => {
   const movieDetails = useSelector(allDetails);
@@ -141,7 +141,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen relative ">
-      <SEO title={title} description={description} image={image} keywords={keywords} />
+      <Seo title={title} description={description} image={image} keywords={keywords} />
       <NavBarCarousel />
       <main
         className={`container mx-auto  bg-transparent mt-8 p-4 sm:p-8 lg:p-12 ${

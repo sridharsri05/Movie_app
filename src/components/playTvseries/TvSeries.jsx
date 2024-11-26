@@ -6,7 +6,7 @@ import { useSearchByidQuery } from "../../Redux/Services/MovieApi";
 import { DropdownSeason } from "./DropdownSeason";
 import React from "react";
 import { Apis } from "../../api/api";
-import SEO from "../../Seo/seo";
+import Seo from "../../utils/Seo";
 
 function TvSeries() {
   const [movieview, setMovieView] = useState(true);
@@ -192,7 +192,7 @@ function TvSeries() {
   return (
     <>
       <div className="pt-6 bg-black mt-[4rem]">
-        <SEO
+        <Seo
           title={`${seriesData?.name} - Watch Now | TV Series`}
           description={`Watch ${SeriesData?.Title} (${SeriesData?.Year}) - ${SeriesData?.Plot}`}
           image={`https://image.tmdb.org/t/p/w500${seriesData?.poster_path}`}

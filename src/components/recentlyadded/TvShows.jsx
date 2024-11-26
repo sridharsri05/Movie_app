@@ -18,7 +18,7 @@ import MovieCardSkeleton from "../Cards/MovieCardSkeleton";
 import MovieCards from "../Cards/MovieCards";
 import { toast } from "react-toastify";
 import { Apis } from "../../api/api";
-import SEO from "../../Seo/seo";
+import Seo from "../../utils/Seo";
 
 //<=======================----------------------------------------------------------------------------------------------------------->
 
@@ -121,7 +121,7 @@ const TvShows = () => {
   return (
     <div className="min-h-screen ">
       {/* <NavBar /> */}
-      <SEO
+      <Seo
         title="Discover Trending TV Series - MovieNexus"
         description="Explore the best TV series on MovieNexus. Watch top-rated shows and stay updated on your favorites."
         image="/../public/MovieHub.png"
