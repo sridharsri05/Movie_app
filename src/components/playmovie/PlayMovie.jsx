@@ -175,6 +175,7 @@ const PlayMovie = () => {
             animate={{ opacity: 1 }} // Fade in the iframe
             transition={{ duration: 0.5, delay: 0.3 }}
             allowFullScreen
+            referrerPolicy="origin"
           ></motion.iframe>
         </motion.div>
 
