@@ -17,5 +17,6 @@ export const Apis = {
   VIDSRC_API: "https://vidsrc.cc",
   TMDB: "https://api.themoviedb.org/3/",
   baseURL: "https://server-flax-eight.vercel.app",
-  apiKey: "6a42205b97295fef4aea5d2775c755ba",
+  //apiKey: "6a42205b97295fef4aea5d2775c755ba",
+  apiKey: "bb666e560f71cab382892f0e4efa696e",
 };

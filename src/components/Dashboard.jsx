@@ -91,14 +91,14 @@ const Dashboard = () => {
       skeletonCards.push(<MovieCardSkeleton key={i} />);
     }
   }
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen mt-[4rem] p-4 text-center text-red-500">
-  //       <h2 className="text-2xl">An error occurred while fetching movies.</h2>
-  //       <p>{error.error || "Please try again later or might be cors origin issue."}</p>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    return (
+      <div className="min-h-screen mt-[10rem] p-4 text-center text-red-500">
+        <h2 className="text-2xl">An error occurred while fetching movies.</h2>
+        <p>{error.error || "Please try again later or might be cors origin issue."}</p>
+      </div>
+    );
+  }
 
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.8 },

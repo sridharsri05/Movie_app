@@ -227,7 +227,7 @@ const NavBar = () => {
           <Link
             to="/dashboard"
             className="mx-auto xl:text-4xl lg:ml-3 xl:ml-0 2xl:ml-2 font-bold text-white font-libre lg:mx-0   text-sm sm:text-base md:text-lg lg:text-xl hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-500  hover:via-green-400  hover:via-purple-500 hover:via-pink-500 hover:to-green-500 transition-all duration-700 ease-in-out "
-         >
+          >
             MovieNexus
           </Link>
           {isOffCanvasOpen && (
@@ -332,7 +332,7 @@ const NavBar = () => {
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
             />
-            <span className="absolute s:hidden  inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer">
+            <span className="absolute s:hidden lg:flex inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer  z-50">
               {isLoading && (
                 <FontAwesomeIcon
                   icon={faSpinner}
@@ -469,9 +469,7 @@ const NavBar = () => {
         } `}
       >
         {/*  <------------------------------------------search results miniDisplay--------------------------------------------------> */}
-        {isLoading && (
-          <div className="text-white grid place-content-center">Loading...</div>
-        )}
+
         {!isSearchResultsPage &&
           isSuccess &&
           !isMovieLinkClicked &&

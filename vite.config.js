@@ -1,50 +1,53 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import sitemapPlugin from 'vite-plugin-sitemap';
-import { Apis } from './src/api/api';
 import axios from 'axios';
+import fs from 'fs/promises';
+import https from 'https';
+import { Apis } from './src/api/api';
 
-
-const hostname = 'https://movienexus-ruddy-nine.vercel.app'
+const hostname = 'https://movienexus-ruddy-nine.vercel.app';
 const staticRoutes = [
-    '/',                       // Login page
-    '/signup',                 // Signup page
-    '/forgot-password',        // Forgot Password page
-    '/reset-password/:token',  // Reset Password
-    '/dashboard',              // User Dashboard
-    '/dashboard/profile',      // User Profile
-    '/dashboard/tvShows',      // TV Shows
-    '/dashboard/PrivacyPolicy',// Privacy Policy
-    '/dashboard/DMCA',         // DMCA Policy
-    '/dashboard/searchResults/:query', // Search Results
-    '/admindashboard',         // Admin Dashboard
-    '/unauthorized',
-]
-async function fetchDynamicRoutes() {
-    try {
-        // Replace with your backend or TMDB API endpoint to get movie details
-        const response = await axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${Apis.apiKey}`);
-        const data = response.data;
+    '/', '/signup', '/forgot-password', '/reset-password/:token',
+    '/dashboard', '/dashboard/profile', '/dashboard/tvShows',
+    '/dashboard/PrivacyPolicy', '/dashboard/DMCA',
+    '/dashboard/searchResults/:query', '/admindashboard', '/unauthorized',
+];
 
-        // Map movie details to dynamic URLs, such as `/movie/{id}`
-        return data.results.map((movie) => `/dashboard/movie/${movie.id}`);
+async function fetchDynamicRoutes() {
+    const url = `https://api.themoviedb.org/3/movie/popular?api_key=${Apis.apiKey}`;
+
+    try {
+        const response = await axios.get(url, {
+            timeout: 8000,
+            httpsAgent: new https.Agent({ keepAlive: true }),
+        });
+
+        const routes = response.data.results.map(
+            movie => `/dashboard/movie/${movie.id}`
+        );
+        await fs.writeFile('./movie-routes.json', JSON.stringify(routes, null, 2));
+        return routes;
     } catch (error) {
-        console.error('Error fetching dynamic routes:', error);
-        return []; // Return an empty array if the API request fails
+        console.warn('⚠️ TMDB fetch failed, using fallback if available.');
+        try {
+            const fallback = await fs.readFile('./movie-routes.json', 'utf-8');
+            return JSON.parse(fallback);
+        } catch {
+            return [];
+        }
     }
 }
 
-
 export default defineConfig(async () => {
     const dynamicRoutes = await fetchDynamicRoutes();
-    const routes = [...staticRoutes, ...dynamicRoutes];
     return {
         plugins: [
             react(),
             sitemapPlugin({
                 hostname,
-                routes,
-            })
+                routes: [...staticRoutes, ...dynamicRoutes],
+            }),
         ],
-    }
+    };
 });

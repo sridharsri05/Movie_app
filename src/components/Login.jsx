@@ -62,12 +62,18 @@ const Login = () => {
             position: "top-right",
             autoClose: 2000,
           });
+        } else if (error) {
+          toast.error(error.message, {
+            position: "top-right",
+            autoClose: 2000,
+          });
         } else {
           toast.error(error.error.message, {
             position: "top-right",
             autoClose: 2000,
           });
         }
+
         // Handle login failure
         console.error("Login failed: dedddd", error);
       }

@@ -87,8 +87,8 @@ export default {
     },
 
   ],
-  Variants:{
-    extend:{
+  Variants: {
+    extend: {
       scrollSnapType: ["responsive"],
       scrollSnapAlign: ["responsive"],
     }
