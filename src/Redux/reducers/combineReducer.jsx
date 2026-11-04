@@ -5,6 +5,7 @@ import authSlice from "../authSlice";
 import searchSlice from "../searchSlice";
 import movieDetailsSlice from "../movieDetailsSlice";
 import { Tmd_API } from "../Services/Searchapi";
+import { libraryApi } from "../Services/LibraryApi";
 
 export const rootReducer = combineReducers({
   auth: authSlice,
@@ -14,4 +15,5 @@ export const rootReducer = combineReducers({
   [vidsrcApi.reducerPath]: vidsrcApi.reducer,
   [vidsrcApi2.reducerPath]: vidsrcApi2.reducer,
   [Tmd_API.reducerPath]: Tmd_API.reducer,
+  [libraryApi.reducerPath]: libraryApi.reducer,
 });

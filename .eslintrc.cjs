@@ -12,6 +12,8 @@ module.exports = {
   settings: { react: { version: '18.2' } },
   plugins: ['react-refresh'],
   rules: {
+    // The project doesn't use PropTypes; this rule only produced noise.
+    'react/prop-types': 'off',
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },

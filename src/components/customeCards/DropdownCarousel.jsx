@@ -77,7 +77,7 @@
 //   );
 // };
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import playbutton from "/play1.svg";
 import { Link, useParams } from "react-router-dom";
 
@@ -191,7 +191,6 @@ export const DropdownCarousel = ({ episodes }) => {
   const [cardsToShow, setCardsToShow] = useState(3); // Default to 3 cards
   const containerRef = useRef(null);
 
-  const totalCards = episodes.length;
   const { imdbID } = useParams();
 
   // Update the number of cards based on screen width
@@ -251,6 +250,8 @@ export const DropdownCarousel = ({ episodes }) => {
                   <img
                     src={`https://image.tmdb.org/t/p/w500${episode.still_path}`}
                     alt={episode.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-auto rounded-lg transition-transform transform scale-100 group-hover:scale-110 opacity-100 group-hover:opacity-35 group-hover:blur-sm duration-300"
                   />
                   <div className="absolute top-0 left-0 w-full h-full opacity-0 transition-opacity group-hover:opacity-100 flex justify-center items-center">

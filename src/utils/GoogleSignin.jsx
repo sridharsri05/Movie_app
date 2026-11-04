@@ -1,4 +1,3 @@
-import React from "react";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { app } from "../components/firebase/Firebase";
 import { useDispatch } from "react-redux";

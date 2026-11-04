@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { tmdbGet } from "../api/tmdb";
+import { Apis } from "../api/api";
 
 const useBackdropImage = (imdbId) => {
   const [backdropUrl, setBackdropUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [ImageError, setImageError] = useState("");
-  const apiKey = "6a42205b97295fef4aea5d2775c755ba";
+  const apiKey = Apis.apiKey;
 
   useEffect(() => {
     const fetchBackdrop = async () => {
@@ -14,7 +15,7 @@ const useBackdropImage = (imdbId) => {
 
       try {
         // Step 1: Get TMDB ID from IMDb ID
-        const findResponse = await axios.get(
+        const findResponse = await tmdbGet(
           `https://api.themoviedb.org/3/find/${imdbId}`,
           {
             params: {
@@ -28,7 +29,7 @@ const useBackdropImage = (imdbId) => {
         if (!tmdbId) throw new Error("Movie not found in TMDB.");
 
         // Step 2: Get Movie Details using TMDB ID
-        const movieResponse = await axios.get(
+        const movieResponse = await tmdbGet(
           `https://api.themoviedb.org/3/movie/${tmdbId}`,
           {
             params: {

@@ -6,7 +6,18 @@ const initialState = {
   TvNew: [],
   TvRecents: [],
   currentPage: 1,
+  tvCurrentPage: 1,
   page: 1,
+};
+
+// Merge fetched items into an existing list by imdbID: new items are appended, and
+// items already present are replaced so fresh data (e.g. fixed posters) wins over
+// whatever redux-persist restored from localStorage.
+const upsertByImdbId = (existing, incoming) => {
+  const fresh = new Map(incoming.map((m) => [m.imdbID, m]));
+  const updated = existing.map((m) => fresh.get(m.imdbID) ?? m);
+  const known = new Set(existing.map((m) => m.imdbID));
+  return [...updated, ...incoming.filter((m) => !known.has(m.imdbID))];
 };
 
 const movieDetailsSlice = createSlice({
@@ -14,38 +25,20 @@ const movieDetailsSlice = createSlice({
   initialState,
   reducers: {
     setMovieDetails: (state, action) => {
-      const newMovieDetails = action.payload;
-
-      // Filter out duplicates based on IMDb ID
-      const uniqueMovieIds = new Set(state.movieDetails.map((movie) => movie.imdbID));
-      const filteredNewMovieDetails = newMovieDetails.filter(
-        (movie) => !uniqueMovieIds.has(movie.imdbID)
-      );
-
-      // Update movieDetails by adding only unique new movie details
-      state.movieDetails = [...state.movieDetails, ...filteredNewMovieDetails];
+      state.movieDetails = upsertByImdbId(state.movieDetails, action.payload);
+    },
+    setTvCurrentPage: (state, action) => {
+      state.tvCurrentPage = action.payload;
     },
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
     },
 
     setMovieRecents: (state, action) => {
-      const newMovieRecents = action.payload;
-      const uniqueNewMovieIds = new Set(state.movieRecents.map((m) => m.imdbID));
-      const filteredNewMovieRecents = newMovieRecents.filter(
-        (n) => !uniqueNewMovieIds.has(n.imdbID)
-      );
-
-      state.movieRecents = [...state.movieRecents, ...filteredNewMovieRecents];
+      state.movieRecents = upsertByImdbId(state.movieRecents, action.payload);
     },
     setTvshows: (state, action) => {
-      const newMovieRecents = action.payload;
-      const uniqueNewMovieIds = new Set(state.TvNew.map((m) => m.imdbID));
-      const filteredNewMovieRecents = newMovieRecents.filter(
-        (n) => !uniqueNewMovieIds.has(n.imdbID)
-      );
-
-      state.TvNew = [...state.TvNew, ...filteredNewMovieRecents];
+      state.TvNew = upsertByImdbId(state.TvNew, action.payload);
     },
     setPage: (state, action) => {
       state.page = action.payload;
@@ -53,9 +46,10 @@ const movieDetailsSlice = createSlice({
   },
 });
 
-export const { setMovieDetails, setCurrentPage, setMovieRecents, setPage, setTvshows } =
+export const { setMovieDetails, setCurrentPage, setTvCurrentPage, setMovieRecents, setPage, setTvshows } =
   movieDetailsSlice.actions;
 export const currentPageSelector = (state) => state.movie.currentPage;
+export const tvCurrentPageSelector = (state) => state.movie.tvCurrentPage ?? 1;
 
 export const allDetails = (state) => state.movie.movieDetails;
 export const allShows = (state) => state.movie.TvNew;

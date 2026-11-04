@@ -56,7 +56,6 @@
 
 // export default PrivacyPolicy;
 
-import React from "react";
 
 const PrivacyPolicy = () => {
   return (

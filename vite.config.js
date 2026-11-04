@@ -49,5 +49,14 @@ export default defineConfig(async () => {
                 routes: [...staticRoutes, ...dynamicRoutes],
             }),
         ],
+        server: {
+            proxy: {
+                '/api': {
+                    target: 'http://localhost:3001',
+                    changeOrigin: true,
+                    secure: false,
+                },
+            },
+        },
     };
 });

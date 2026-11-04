@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <!-- Generated from FACETS in src/components/Brand/Logo.jsx -->
+  <defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity=".28"/><stop offset="55%" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  <polygon points="4,6 13,6 4,18" fill="#4fd6e8" stroke="#4fd6e8" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="13,6 13,20 4,18" fill="#33a8e3" stroke="#33a8e3" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="4,18 13,20 4,26" fill="#2fbba3" stroke="#2fbba3" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="4,26 13,20 13,34" fill="#3cb46b" stroke="#3cb46b" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="4,26 13,34 4,34" fill="#a8d83c" stroke="#a8d83c" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="13,6 20,17 13,20" fill="#3b8fe8" stroke="#3b8fe8" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="13,20 20,17 20,31" fill="#3a5fd4" stroke="#3a5fd4" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="20,17 27,6 27,20" fill="#7b4fd8" stroke="#7b4fd8" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="20,17 27,20 20,31" fill="#5b42c8" stroke="#5b42c8" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="27,6 36,6 36,15" fill="#ad6fdd" stroke="#ad6fdd" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="27,6 36,15 27,20" fill="#8d4ccf" stroke="#8d4ccf" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="27,20 36,15 36,24" fill="#c23db4" stroke="#c23db4" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="27,20 36,24 27,34" fill="#e2368b" stroke="#e2368b" stroke-width=".35" stroke-linejoin="round"/>
+  <polygon points="27,34 36,24 36,34" fill="#e5273f" stroke="#e5273f" stroke-width=".35" stroke-linejoin="round"/>
+  <path d="M4 6H13L20 17 27 6H36V34H27V20L20 31 13 20V34H4Z" fill="url(#s)"/>
+</svg>

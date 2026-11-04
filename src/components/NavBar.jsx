@@ -4,87 +4,77 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBarsStaggered,
-  faUser,
   faSearch,
   faSpinner,
-  faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchByQueryQuery } from "../Redux/Services/MovieApi";
 import {
   resetSearchResults,
   selectCurrentPage,
-  selectSearchResults,
   setDataLoading,
   setSearchQuery,
   setSearchResults,
   setTotalResults,
 } from "../Redux/searchSlice";
 import { logout, selectAuth } from "../Redux/authSlice";
+import { libraryApi } from "../Redux/Services/LibraryApi";
 import { motion } from "framer-motion";
-import { useFetchPopularMoviesQuery } from "../Redux/Services/Searchapi";
-import axios from "axios";
+import { enrichSearchResults } from "../api/enrichSearchResults";
 import { debounce } from "lodash";
 import { useCallback } from "react";
+import Logo from "./Brand/Logo";
+import ProfileMenu from "./Nav/ProfileMenu";
+import BrowseMenu, { BROWSE_LINKS } from "./Nav/BrowseMenu";
+import SearchPanel from "./Search/SearchPanel";
+
+const NAV_LINKS = [
+  { to: "/dashboard", label: "Home" },
+  { to: "/dashboard/tvShows", label: "TV Shows" },
+];
 
 const NavBar = () => {
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
-  const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
-  const [isMovieLinkClicked, setIsMovieLinkClicked] = useState(false);
   const location = useLocation();
   const [error, setError] = useState(null);
+  const [resultsFor, setResultsFor] = useState(""); // query that Data/error belong to
   const [Data, setData] = useState([]);
-  const { user } = useSelector(selectAuth);
+  const { user, role } = useSelector(selectAuth);
   const currentPage = useSelector(selectCurrentPage);
-  const { data: movies, isSuccess } = useSearchByQueryQuery(
+  // Search OMDb only after typing pauses, not on every keystroke.
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
+    // OMDb answers "Too many results" for 1–2 letter queries, so wait for 3+ characters.
+    const q = query.trim();
+    const timer = setTimeout(() => setDebouncedQuery(q.length >= 3 ? q : ""), 400);
+    return () => clearTimeout(timer);
+  }, [query]);
+  const { currentData: movies, isSuccess } = useSearchByQueryQuery(
     {
-      query: query,
+      query: debouncedQuery,
       page: currentPage,
     },
-    { skip: !query }
+    { skip: !debouncedQuery }
   );
-  const dropdownRef = useRef(null);
 
-  const navigate = useNavigate();
-  const offSetRef = useRef();
-  const [isLoading, setIsLoading] = useState(false);
-  const Search = useSelector(selectSearchResults);
-  // console.log(user)
-  // console.log(d, "mv");
-  const handleMouseEnter = () => setIsOpen(true);
-  const handleMouseLeave = () => setIsOpen(false);
-
-  const handleButtonFocus = () => {
-    setIsOpen(true);
-  };
-
-  const handleButtonBlur = (event) => {
-    // Check if the focused element is still within the dropdown
-    if (dropdownRef.current && !dropdownRef.current.contains(event.relatedTarget)) {
-      setIsOpen(false);
-    }
-  };
+  // Press "/" anywhere (outside a text field) to jump to search.
+  const searchRef = useRef(null);
   useEffect(() => {
-    setIsMovieLinkClicked(false);
-  }, [location]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Set the state based on scroll position (for example, when scrolling down more than 50 pixels)
-      setIsScrolled(window.scrollY > 30);
+    const onKeyDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
     };
-    // Attach the scroll event listener
-    window.addEventListener("scroll", handleScroll);
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [visible, setVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
@@ -104,16 +94,8 @@ const NavBar = () => {
     };
   }, [prevScrollPos]);
 
-  const navbarHeight = visible ? 0 : 0;
-
   const toggleOffCanvas = () => {
     setIsOffCanvasOpen(!isOffCanvasOpen);
-  };
-
-  const handleMovieLinkClick = () => {
-    // Set the state to true when a movie link is clicked
-    setIsMovieLinkClicked(true);
-    setQuery("");
   };
 
   const handleSearch = useCallback(
@@ -129,33 +111,12 @@ const NavBar = () => {
           if (movies.Response === "True") {
             dispatch(setTotalResults(Number(movies.totalResults)));
 
-            const combinedResults = await Promise.all(
-              movies.Search.map(async (movie) => {
-                try {
-                  const detailResponse = await axios.get(
-                    `https://www.omdbapi.com/?i=${movie.imdbID}&apikey=8d58c823`
-                  );
-                  const movieDetails = detailResponse.data;
-
-                  return {
-                    ...movie,
-                    Plot: movieDetails.Plot || "Plot not available",
-                    Genre: movieDetails.Genre || "Genre not available",
-                    Director: movieDetails.Director || "Director not available",
-                    Actors: movieDetails.Actors || "Actors not available",
-                    imdbRating: movieDetails.imdbRating || "Rating not available",
-                  };
-                } catch (error) {
-                  console.error(`Error fetching details for ${movie.imdbID}:`, error);
-                  return movie;
-                }
-              })
-            );
+            const combinedResults = await enrichSearchResults(movies.Search);
 
             dispatch(setSearchResults(combinedResults));
             setData(combinedResults);
             dispatch(setDataLoading(false));
-            dispatch(setSearchQuery(query));
+            dispatch(setSearchQuery(debouncedQuery));
             return true;
           } else {
             setError(movies.Error || "No results found");
@@ -166,55 +127,83 @@ const NavBar = () => {
         } finally {
           setIsLoading(false);
           dispatch(setDataLoading(false));
-          dispatch(setSearchQuery(query));
+          dispatch(setSearchQuery(debouncedQuery));
+          setResultsFor(debouncedQuery);
         }
       }
-    }, 3000),
-    [isSuccess, movies, dispatch, query]
+    }, 150),
+    [isSuccess, movies, dispatch, debouncedQuery]
   );
 
+  // Enrich results once OMDb has answered for the current (debounced) query.
   useEffect(() => {
-    if (query) {
-      handleSearch();
-    }
-  }, [query, handleSearch]);
+    if (debouncedQuery && isSuccess && movies) handleSearch();
+  }, [debouncedQuery, isSuccess, movies, handleSearch]);
+
+  // Search panel (trending when empty, live results while typing) opens on focus.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchWrapRef = useRef(null);
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onPointerDown = (e) => {
+      if (!searchWrapRef.current?.contains(e.target)) setSearchOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+        searchRef.current?.blur();
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setQuery("");
+    setIsOffCanvasOpen(false);
+  };
+
+  // Enter or "See all results": open the full results page (it fetches by the stored query).
+  const openAllResults = () => {
+    const q = query.trim();
+    if (q.length < 3) return;
+    dispatch(setSearchQuery(q));
+    closeSearch();
+    searchRef.current?.blur();
+    navigate(`/dashboard/searchResults/${encodeURIComponent(q)}`);
+  };
 
   const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleSearch().then((isSuccessful) => {
-        if (isSuccessful && query.trim() !== "") {
-          setQuery("");
-          setIsMovieLinkClicked(true);
-          setIsOffCanvasOpen(false);
-          navigate(`searchResults/${query}`);
-        }
-      });
-    }
+    if (event.key === "Enter") openAllResults();
   };
 
   const handleSignOut = () => {
-    // Dispatch the logout action
     dispatch(logout());
+    dispatch(libraryApi.util.resetApiState()); // drop this user's cached library
   };
   const menuVariants = {
     open: { x: 0 },
     closed: { x: "-100%" },
   };
-  const isSearchResultsPage = location.pathname.startsWith("/dashboard/searchResults/");
 
   return (
     <>
       <nav
         style={{
           background:
-            "linear-gradient(180deg, rgba(11,0,25,.8) .98%, rgba(11,0,25,.4) 59.23%, rgba(11,0,25,.2) 78.16%, rgba(11,0,25,0) 96.12%)",
+            "linear-gradient(180deg, rgba(5,0,15,.92) 0%, rgba(5,0,15,.65) 50%, rgba(5,0,15,.25) 80%, rgba(5,0,15,0) 100%)",
           backgroundBlendMode: "multiply",
         }}
         className={`p-2  fixed top-0 left-0 w-full z-50 transition-transform h-[4.5rem] duration-500 ease-in-out ${
           visible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="container  flex items-center justify-between 3xl:justify-evenly  mx-auto">
+        <div className="container flex items-center justify-between h-full px-2 lg:px-6 mx-auto">
           {/* offCanvas trigger Menu Icon */}
           <button
             onClick={toggleOffCanvas}
@@ -226,9 +215,11 @@ const NavBar = () => {
           {/* Logo or Brand (centered) */}
           <Link
             to="/dashboard"
-            className="mx-auto xl:text-4xl lg:ml-3 xl:ml-0 2xl:ml-2 font-bold text-white font-libre lg:mx-0   text-sm sm:text-base md:text-lg lg:text-xl hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-500  hover:via-green-400  hover:via-purple-500 hover:via-pink-500 hover:to-green-500 transition-all duration-700 ease-in-out "
+            aria-label="MovieNexus home"
+            // No box after a mouse click; keyboard users still get a visible focus ring.
+            className="mx-auto lg:mx-0 shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
           >
-            MovieNexus
+            <Logo />
           </Link>
           {isOffCanvasOpen && (
             <>
@@ -253,6 +244,9 @@ const NavBar = () => {
                   >
                     <span className="text-xl">&times;</span>
                   </motion.div>
+                  <div className="px-4 pb-4 mb-2 border-b border-white/10">
+                    <Logo compact />
+                  </div>
 
                   {/* Off-canvas menu content goes here */}
 
@@ -273,12 +267,19 @@ const NavBar = () => {
                     >
                       TV Shows
                     </Link>
-                    <Link
-                      to="/dashboard/dropdown2"
-                      className="text-white hover:text-gray-300 py-2 px-4 font-libre block"
-                    >
-                      Trending
-                    </Link>
+                    <p className="mt-4 px-4 pb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                      Browse
+                    </p>
+                    {BROWSE_LINKS.map((l) => (
+                      <Link
+                        key={l.label}
+                        to={l.to}
+                        onClick={toggleOffCanvas}
+                        className="text-white/80 hover:text-white py-2 px-4 font-libre block"
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
                   </motion.div>
 
                   <motion.div
@@ -306,221 +307,79 @@ const NavBar = () => {
             </>
           )}
           {/* Navigation Links */}
-          <div className="hidden lg:flex lg:ml-[14rem]  xl:ml-[30rem] gap-3 md:ml-[28rem] font-libre ">
-            <Link to="/dashboard" className="text-white hover:text-yellow-500">
-              Home
-            </Link>
-            <Link to="/dashboard/tvshows" className="text-white hover:text-yellow-500">
-              TV Shows
-            </Link>
-            <Link to="/dashboard" className="text-white hover:text-yellow-500">
-              Trending
-            </Link>
+          <div className="hidden lg:flex items-center gap-8 lg:ml-12 mr-auto">
+            {NAV_LINKS.map(({ to, label }) => {
+              const active = location.pathname.toLowerCase() === to.toLowerCase();
+              return (
+                <Link
+                  key={label}
+                  to={to}
+                  className={`relative py-2 text-[0.8rem] font-semibold uppercase tracking-[0.18em] transition-colors duration-200 ${
+                    active ? "text-white" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {label}
+                  <span
+                    className={`absolute left-0 -bottom-0.5 h-[2px] rounded-full bg-rose-500 transition-all duration-300 ${
+                      active ? "w-full" : "w-0"
+                    }`}
+                  />
+                </Link>
+              );
+            })}
+            <BrowseMenu active={location.pathname === "/dashboard" && Boolean(location.hash)} />
           </div>
           {/* search bar */}
-          <div className="relative text-gray-600 focus-within:text-gray-400 ml-4  3xl:ml-0  lg:grid  z-0">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-              <FontAwesomeIcon icon={faSearch} className="text-lg" />
+          <div
+            ref={searchWrapRef}
+            className="relative text-gray-400 focus-within:text-white ml-4 lg:mr-5 z-50"
+          >
+            <span className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+              <FontAwesomeIcon icon={faSearch} className="text-sm" />
             </span>
             <input
+              ref={searchRef}
               type="search"
-              className={`s:focus:w-[180px] l:focus:w-[200px]  transition-all duration-700 ease-in-out w-0 lg:w-full lg:focus:w-full py-2 pl-10 md:pr-4 bg-transparent border border-green-500 rounded-md focus:outline-none focus:border-green-500 ${
+              className={`s:focus:w-[180px] l:focus:w-[200px] transition-all duration-500 ease-in-out w-0 lg:w-72 xl:w-80 lg:focus:w-96 py-2.5 pl-11 lg:pr-12 rounded-full text-sm text-white placeholder:text-gray-400 bg-white/5 backdrop-blur-md border border-white/15 hover:border-white/30 focus:border-rose-500/70 focus:bg-black/40 focus:outline-none focus:ring-2 focus:ring-rose-500/20 ${
                 isLoading ? "hide-clear-button" : ""
               }`}
-              placeholder="Search Movies & Tv Shows..."
+              placeholder="Search movies & TV shows..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => {
+                setSearchOpen(true);
+              }}
               onKeyPress={handleKeyPress}
             />
-            <span className="absolute s:hidden lg:flex inset-y-0 right-0 flex items-center pr-4 justify-end cursor-pointer  z-50">
-              {isLoading && (
-                <FontAwesomeIcon
-                  icon={faSpinner}
-                  spin
-                  className="text-lg text-cyan-700"
-                />
+            <span className="absolute s:hidden lg:flex inset-y-0 right-0 items-center pr-3 pointer-events-none">
+              {isLoading ? (
+                <FontAwesomeIcon icon={faSpinner} spin className="text-sm text-rose-400" />
+              ) : (
+                !query && (
+                  <kbd className="rounded-md border border-white/20 px-1.5 text-[0.7rem] leading-5 text-gray-400 font-sans">
+                    /
+                  </kbd>
+                )
               )}
             </span>
+            {searchOpen && !isOffCanvasOpen && (
+              <SearchPanel
+                query={query}
+                results={Data}
+                loading={query.trim().length >= 3 && (isLoading || resultsFor !== query.trim())}
+                error={error}
+                onClose={closeSearch}
+                onSeeAll={openAllResults}
+              />
+            )}
           </div>
-          {/* User Profile */}
-          <div ref={dropdownRef} className="items-center hidden space-x-4 lg:flex">
-            <div className="relative inline-block text-left">
-              <button
-                type="button"
-                className={`inline-flex items-center border border-transparent font-medium rounded-full text-white bg-gray-800  
-                 ${isOpen ? "focus:ring-2 focus:ring-blue-700" : "hover:bg-gray-700"}`}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onFocus={handleButtonFocus}
-                onBlur={handleButtonBlur}
-              >
-                {/* You may replace this with your Avatar component */}
-                <div className="flex items-center justify-center ">
-                  {user?.profilePicture ? (
-                    <div className=" size-[3.5rem] ">
-                      <img
-                        src={user?.profilePicture}
-                        className="object-cover w-full h-full text-3xl text-white border border-gray-800 rounded-full fa-duotone"
-                      />
-                    </div>
-                  ) : (
-                    <FontAwesomeIcon
-                      icon={faUser}
-                      className="w-full h-full text-3xl text-white fa-duotone "
-                    />
-                  )}
-                </div>
-              </button>
-
-              {isOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  onMouseEnter={handleMouseEnter} // Keep dropdown open when hovering
-                  onMouseLeave={handleMouseLeave}
-                  className="origin-top-right absolute z-50 right-0 mt-0 min-w-44 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 dark:ring-opacity-30 focus:outline-none *:font-libre"
-                >
-                  <div className="flex justify-evenly items-center relative pt-1">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                    >
-                      {user?.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          className="object-cover rounded-full size-12"
-                        />
-                      ) : (
-                        <FontAwesomeIcon
-                          icon={faUser}
-                          className="p-2 bg-blue-500 text-white rounded-full size-6 fa-duotone"
-                        />
-                      )}
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="text-black dark:text-white"
-                    >
-                      <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-[1rem] truncate max-w-[6rem]"
-                      >
-                        {user.username.slice(0, 10)}
-                      </motion.div>
-                      <ul className="text-xs text-blue-500 dark:text-blue-300 font-libre">
-                        <li>Free</li>
-                        <li>online</li>
-                      </ul>
-                    </motion.div>
-                  </div>
-
-                  <hr className="mt-3 dark:border-gray-600" />
-                  <div className="py-1">
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-                      role="menuitem"
-                    >
-                      <Link to="/dashboard/profile">Edit Profile</Link>
-                    </motion.button>
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-                      role="menuitem"
-                    >
-                      Earnings
-                    </motion.button>
-                    <hr className="my-1 dark:border-gray-600" />
-                    <motion.button
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="block px-4 py-2 text-sm text-red-500 dark:text-red-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-                      role="menuitem"
-                      onClick={handleSignOut}
-                    >
-                      Sign out
-                    </motion.button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </div>
+          <ProfileMenu user={user} role={role} onSignOut={handleSignOut} />
         </div>
       </nav>
 
-      {/* <------------------------------------------------Additional content or search functionality--------------------------------------------------------> */}
-      <div
-        style={{ paddingTop: navbarHeight }}
-        className={`flex items-center  space-x-4 bg-gray-800 place-content-center ${
-          isSuccess ? " visible" : "hidden"
-        } `}
-      >
-        {/*  <------------------------------------------search results miniDisplay--------------------------------------------------> */}
-
-        {!isSearchResultsPage &&
-          isSuccess &&
-          !isMovieLinkClicked &&
-          Data.length > 0 &&
-          !isLoading &&
-          !isOffCanvasOpen && (
-            <motion.div
-              className={`right-0 border-t-0 ml-0 s:hidden md:block l:w-full l:h-[28rem]  l:top-[4rem] md:top-[5rem] z-50 md:w-[26rem] opacity-90 absolute  scroll-smooth scroll-p-0 md:h-[32rem] overflow-y-auto ${
-                isScrolled ? "hidden" : ""
-              }`}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: isScrolled ? 0 : 1, y: isScrolled ? -20 : 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
-              {Data.map((movie) => (
-                <Link
-                  key={movie.imdbID}
-                  to={
-                    movie.Type === "movie" || movie.Type === "game"
-                      ? `/dashboard/movie/${movie?.imdbID}`
-                      : movie.Type === "series"
-                      ? `/dashboard/tvSeries/${movie?.imdbID}`
-                      : `/dashboard/movie/${movie?.imdbID}`
-                  }
-                  onClick={handleMovieLinkClick}
-                >
-                  <ul className="float-left w-full mt-0 text-black transition-opacity shadow-md bg-slate-800 bg-opacity-95">
-                    <li className="block float-left w-full p-3 border-b-[1px] border-cyan-400">
-                      <div className="float-left inline-block mr-[20px] h-2/4 w-24 overflow-hidden">
-                        <img
-                          src={movie.Poster}
-                          alt={movie.Title}
-                          className="w-full h-full rounded-md"
-                        />
-                      </div>
-                      <div className="mb-0 text-sm *:font-normal text-ellipsis whitespace-nowrap overflow-hidden text-white">
-                        {movie.Title}{" "}
-                        <span className="ml-1 text-[12px]">( {movie.Year} )</span>
-                        <span className="float-end">⭐ {movie.imdbRating}</span>
-                      </div>
-                      <p className="font-mono text-sm font-thin text-white text-wrap text-ellipsis">
-                        {movie.Plot}
-                      </p>
-                    </li>
-                  </ul>
-                </Link>
-              ))}
-            </motion.div>
-          )}
-        {error && <div className="text-red-500 mt-2">{error}</div>}
-      </div>
     </>
   );
 };

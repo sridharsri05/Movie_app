@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import MovieCards from "./Cards/MovieCards";
@@ -13,14 +13,13 @@ import axios from "axios";
 import { selectAuth } from "../Redux/authSlice";
 import {
   useGetNewlyAddedMovies2Query,
-  useGetRecentlyAddedMoviesQuery,
 } from "../Redux/Services/MovieApi";
 import MovieCardSkeleton from "./Cards/MovieCardSkeleton";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { toast } from "react-toastify";
-import { Spin } from "antd";
 import { Apis } from "../api/api";
 import NavBarCarousel from "./customeCards/NavBarCarousel";
+import HomeRows from "./Rows/HomeRows";
 import Seo from "../utils/Seo";
 
 const Dashboard = () => {
@@ -28,13 +27,12 @@ const Dashboard = () => {
   const { greeting, showGreeting } = useGreeting();
   const { user } = useSelector(selectAuth);
   const currentPage = useSelector(currentPageSelector);
-  const PageSelector = (state) => state.movie.page;
-  const page = useSelector(PageSelector);
   const [showMore, setShowMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false); // a next page is being fetched
+  const [reachedEnd, setReachedEnd] = useState(false); // the list API returned nothing more
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const { data, isLoading, error } = useGetNewlyAddedMovies2Query(currentPage);
-  const { data: recent } = useGetRecentlyAddedMoviesQuery(page);
 
   // console.log(data, "de");
   // console.log(recent, "sri");
@@ -42,26 +40,16 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchMovieDetails = async () => {
       if (data && data.result && data.result) {
-        const imdbIds = data.result.map((item) => item.imdb_id) || [];
-        console.log({ imdbIds });
-        console.log("page no :", currentPage);
+        const imdbIds = data.result.map((item) => item.imdb_id).filter(Boolean);
 
         try {
-          const responses = await axios.all(
-            imdbIds.map((imdbId) =>
-              axios.post(`${Apis.baseURL}/getLatestMovies`, {
-                imdbIds: [imdbId],
-              })
-            )
-          );
-
-          const movieList = responses
-            .map((response) => response.data)
-            .flat() // Flatten the nested arrays
-            .filter(Boolean);
-
-          // console.log("Movie List:", movieList); // Log the flattened movieList
-          dispatch(setMovieDetails(movieList));
+          // One batched request per page; the server skips IDs it can't resolve.
+          const { data: movieList } = await axios.post(`${Apis.baseURL}/getLatestMovies`, {
+            imdbIds,
+          });
+          dispatch(setMovieDetails(movieList.filter(Boolean)));
+          setLoadingMore(false);
+          if (!imdbIds.length) setReachedEnd(true);
           setLoading(false);
         } catch (error) {
           toast.error(error, {
@@ -69,25 +57,31 @@ const Dashboard = () => {
             autoClose: 3000,
           });
           console.error("Error fetching new movie details:", error);
+          setLoadingMore(false);
         }
       }
     };
 
     fetchMovieDetails();
-  }, [currentPage, data, dispatch, recent]);
+  }, [currentPage, data, dispatch]);
 
   // Show more items when "View More" button is clicked
 
   const thresholdMovies = 0.3;
+  const loadNextPage = () => {
+    if (loadingMore || reachedEnd) return;
+    setLoadingMore(true);
+    dispatch(setCurrentPage(currentPage + 1));
+  };
   const handleViewMore = () => {
     setShowMore(true);
+    loadNextPage();
   };
 
-  const MovieCardsMemoized = React.memo(MovieCards);
   let skeletonCards = [];
   if (loading || isLoading) {
     // Render a fixed number of skeleton cards (e.g., 10)
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 14; i++) {
       skeletonCards.push(<MovieCardSkeleton key={i} />);
     }
   }
@@ -101,14 +95,8 @@ const Dashboard = () => {
   }
 
   const cardVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-      },
-    },
+    hidden: { opacity: 0, y: 8 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
   };
 
   const movies = movieDetails
@@ -120,7 +108,7 @@ const Dashboard = () => {
         initial="hidden"
         animate="visible"
       >
-        <MovieCardsMemoized
+        <MovieCards
           key={details?.imdbID}
           imageUrl={details?.Poster}
           title={details?.Title}
@@ -143,6 +131,7 @@ const Dashboard = () => {
     <div className="min-h-screen relative ">
       <Seo title={title} description={description} image={image} keywords={keywords} />
       <NavBarCarousel />
+      <HomeRows />
       <main
         className={`container mx-auto  bg-transparent mt-8 p-4 sm:p-8 lg:p-12 ${
           !showGreeting && "hidden"
@@ -158,62 +147,55 @@ const Dashboard = () => {
         )}
       </main>
 
-      <div className="p-4 bg-gray-800   ">
-        <header className="pl-2 mt-2 text-xl text-white border-l-4 border-orange-500 font-libre">
-          🔥Latest Added
+      <div className="bg-[#0b0614] pb-12">
+        <header className="container mx-auto px-4 lg:px-6 pt-8 flex items-center gap-3 text-xl lg:text-2xl font-semibold text-white font-gilroy before:content-[''] before:h-6 before:w-1 before:rounded-full before:bg-gradient-to-b before:from-violet-400 before:to-rose-500">
+          Latest Added
         </header>
 
         <InfiniteScroll
           style={{ overflow: "hidden" }}
           dataLength={movies.length} //This is important field to render the next data
-          next={() => dispatch(setCurrentPage(currentPage + 1))}
+          next={loadNextPage}
           scrollThreshold={thresholdMovies}
-          hasMore={showMore} // Set to true to enable infinite scroll
-          loader={
-            <div className=" flex justify-center items-center ">
-              <Spin size="large " /> <p className=" mx-2 text-slate-50">Loading ...</p>
-            </div>
-          }
-          endMessage={
-            showMore && (
-              <p className="text-center ">
-                <b>Yay! You have seen it all</b>
-              </p>
-            )
-          }
+          hasMore={showMore && !reachedEnd}
+          loader={null}
+          endMessage={null}
         >
           <motion.section
-            className="grid s:grid-cols-1 m:grid-cols-2 gap-4 s:px-2 m:px-1 px-3 py-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 3xl:grid-cols-6 "
+            className="container mx-auto px-4 lg:px-6 py-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 3xl:grid-cols-8 gap-x-4 gap-y-7"
             initial="hidden"
             animate="visible"
             variants={container}
           >
             {loading || isLoading ? skeletonCards : movies}
+            {loadingMore && !(loading || isLoading) && skeletonCards.length === 0 &&
+              Array.from({ length: 7 }, (_, i) => <MovieCardSkeleton key={`more-${i}`} />)}
           </motion.section>
-          {!showMore && (
-            <div className="text-center my-2  relative">
-              <button
+          {!showMore && !(loading || isLoading) && (
+            <div className="mt-4 flex justify-center">
+              <motion.button
+                type="button"
                 onClick={handleViewMore}
-                className="hover:scale-110  text-yellow-500 font-bold py-2 px-4 rounded"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                className="rounded-full bg-gradient-to-r from-violet-400 to-rose-500 p-px shadow-lg shadow-fuchsia-500/20"
               >
-                View More
-              </button>
+                <span className="flex items-center gap-2 rounded-full bg-[#0b0614] px-7 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#160d24]">
+                  View more
+                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                    <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4z" />
+                  </svg>
+                </span>
+              </motion.button>
             </div>
+          )}
+          {showMore && reachedEnd && (
+            <p className="mt-6 text-center text-sm text-white/50">You&apos;ve reached the end of the list.</p>
           )}
         </InfiniteScroll>
       </div>
     </div>
   );
 };
-const container = {
-  hidden: { opacity: 1, scale: 0 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delayChildren: 0.3,
-      staggerChildren: 0.2,
-    },
-  },
-};
+const container = { hidden: {}, visible: {} };
 export default Dashboard;

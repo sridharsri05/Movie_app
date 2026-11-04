@@ -12,6 +12,7 @@ const Dashboard = React.lazy(() => import("./components/Dashboard"));
 const PrivacyPolicy = React.lazy(() => import("./components/Privacy/PrivacyPolicy"));
 const Dmca = React.lazy(() => import("./components/Privacy/Dmca"));
 const TvSeries = React.lazy(() => import("./components/playTvseries/TvSeries"));
+const Library = React.lazy(() => import("./components/Library/Library"));
 const Profile = React.lazy(() => import("./components/Profile/Profile"));
 const PlayMovie = React.lazy(() => import("./components/playmovie/PlayMovie"));
 const SearchResults = React.lazy(() => import("./components/SearchResults"));
@@ -44,6 +45,7 @@ function App() {
             <Route element={<DashboardLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="library/:tab" element={<Library />} />
               <Route path="tvShows" element={<TvShows />} />
               <Route path="movie/:imdbID" element={<PlayMovie />} />
               <Route path="episodes/:imdbID/:season/:epi" element={<TvSeries />} />

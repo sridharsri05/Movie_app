@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import playbutton from "/play1.svg"; // Ensure this path is correct
 
@@ -12,6 +11,8 @@ const Card = ({ title, poster, year, rating, link }) => {
               className="w-full h-full object-contain sm:object-cover transition-transform transform scale-100 group-hover:scale-110 opacity-100 group-hover:opacity-35 group-hover:blur-sm duration-300"
               src={poster}
               alt={title}
+              loading="lazy"
+              decoding="async"
             />
 
             <div className="absolute top-0 left-0 w-full h-full opacity-0 transition-opacity group-hover:opacity-100 flex justify-center items-center">

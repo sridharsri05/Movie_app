@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { tmdbGet } from "../../api/tmdb";
 
 const SeasonsDropdown = ({ seriesId }) => {
   const [seasons, setSeasons] = useState([]);
@@ -7,12 +7,11 @@ const SeasonsDropdown = ({ seriesId }) => {
   const [episodes, setEpisodes] = useState([]);
 
   // Fetch all seasons when the component mounts
-  const apiKey = "6a42205b97295fef4aea5d2775c755ba";
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}`
+        const response = await tmdbGet(
+          `https://api.themoviedb.org/3/tv/${seriesId}`
         );
         setSeasons(response.data.seasons);
       } catch (error) {
@@ -29,8 +28,8 @@ const SeasonsDropdown = ({ seriesId }) => {
       if (!selectedSeason) return;
 
       try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedSeason}?api_key=${apiKey}`
+        const response = await tmdbGet(
+          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedSeason}`
         );
         setEpisodes(response.data.episodes);
       } catch (error) {

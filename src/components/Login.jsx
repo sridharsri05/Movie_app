@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, setLoading } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
@@ -191,7 +191,7 @@ const Login = () => {
               </div>
 
               <span className="  text-center text-gray-600  font-medium text-sm ">
-                Don't have an account ?{" "}
+                Don&apos;t have an account ?{" "}
                 <Link to="/signup" className="text-blue-500 hover:underline ">
                   Register for free
                 </Link>

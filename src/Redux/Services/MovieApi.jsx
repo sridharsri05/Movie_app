@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Apis } from "../../api/api";
 
 const baseQuery = fetchBaseQuery({ baseUrl: Apis.OMBD_API });
-const OMBD_API_KEY = "8d58c823";
+const OMBD_API_KEY = Apis.omdbKey;
 
 export const omdbApi = createApi({
   reducerPath: "omdb_Api",

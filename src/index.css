@@ -1,19 +1,24 @@
 @font-face {
     font-family: "Gilroy";
-    src: url("/public/FontsFree-Net-Gilroy1.ttf");
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: "Gilroy";
-    src: url("/public/FontsFree-Net-Gilroy3.ttf");
+    /* Files were mislabelled: Gilroy1.ttf is Gilroy-SemiBold (checked the TTF name table).
+       Paths: public/ files are served from "/"; "/public/..." only works in dev. */
+    src: url("/FontsFree-Net-Gilroy1.ttf");
     font-weight: 600;
+    font-display: swap;
 }
 
 @font-face {
     font-family: "Gilroy";
-    src: url("/public/FontsFree-Net-Gilroy-Bold.ttf");
+    src: url("/FontsFree-Net-Gilroy3.ttf"); /* Gilroy-Regular */
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Gilroy";
+    src: url("/FontsFree-Net-Gilroy-Bold.ttf"); /* Gilroy-Bold */
     font-weight: 700;
+    font-display: swap;
 }
 
 body {

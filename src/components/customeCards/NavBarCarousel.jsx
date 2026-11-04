@@ -13,18 +13,84 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "../../index.css";
 import { useFetchPopularMoviesQuery } from "../../Redux/Services/Searchapi";
-import axios from "axios";
+import { tmdbGet } from "../../api/tmdb";
 import { Apis } from "../../api/api";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
-const NavBarCarousel = () => {
-  const { data, isLoading, error } = useFetchPopularMoviesQuery();
+// Smooth ease-out curve shared by the hero animations.
+const EASE = [0.22, 1, 0.36, 1];
+const heroContainer = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } };
+const heroTitle = {
+  hidden: { opacity: 0, y: 12, filter: "blur(6px)" },
+  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease: EASE } },
+};
+const heroItem = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+};
+const formatRuntime = (min) => (min >= 60 ? `${Math.floor(min / 60)}h ${min % 60}m` : `${min}m`);
+
+const backdropUrl = (movie) =>
+  movie?.backdrop_path ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}` : null;
+
+// Logo URLs that have finished downloading, so a slide's title shows the logo immediately.
+const loadedLogos = new Set();
+const preload = (src, onDone) => {
+  if (!src) return;
+  const img = new Image();
+  img.onload = () => onDone?.(src);
+  img.src = src;
+};
+
+// Shows the movie's official logo once it has loaded; until then (or if there is none), the text title.
+const HeroTitle = ({ movie }) => {
+  const [logoReady, setLogoReady] = useState(() => loadedLogos.has(movie?.logoUrl));
+  if (!movie) return null;
+  return (
+    <>
+      {movie.logoUrl && (
+        <img
+          src={movie.logoUrl}
+          alt={movie.title}
+          onLoad={() => {
+            loadedLogos.add(movie.logoUrl);
+            setLogoReady(true);
+          }}
+          className={`${logoReady ? "block" : "hidden"} w-auto max-w-[90%] max-h-24 md:max-h-32 lg:max-w-[26rem] xl:max-h-40 xl:max-w-[34rem] 2xl:max-h-52 2xl:max-w-[44rem] object-contain object-left drop-shadow-[0_6px_18px_rgba(0,0,0,0.85)]`}
+        />
+      )}
+      {!logoReady && movie.title}
+    </>
+  );
+};
+
+const cardsForWidth = (w) => {
+  if (w < 320) return 2;
+  if (w < 425) return 3;
+  if (w < 1024) return 4;
+  if (w < 1280) return 3; // narrower carousel column on small laptops: fewer, larger cards
+  return 4;
+};
+
+// type="movie" (popular movies) or type="tv" (trending TV shows). Both are normalised to the
+// same shape (title, release_date, imdb_id, ...) so the hero UI is shared.
+const NavBarCarousel = ({ type = "movie" }) => {
+  const isTv = type === "tv";
+  const { data: movieList, isLoading, error } = useFetchPopularMoviesQuery(undefined, { skip: isTv });
+  const [tvList, setTvList] = useState(null);
+  useEffect(() => {
+    if (!isTv) return;
+    tmdbGet("https://api.themoviedb.org/3/trending/tv/week")
+      .then(({ data }) => setTvList(data))
+      .catch((err) => console.error("Error fetching trending TV:", err));
+  }, [isTv]);
+  const data = isTv ? tvList : movieList;
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
   const swiperRef = useRef(null);
 
-  const [showingCards, setShowingCards] = useState(null);
+  const [showingCards, setShowingCards] = useState(() => cardsForWidth(window.innerWidth));
   // console.log(data, "dfff");
   // console.log(movies, "d");
 
@@ -33,63 +99,81 @@ const NavBarCarousel = () => {
       try {
         const movieData = data.results;
 
-        // Fetch trailers and IMDb IDs
+        // One TMDB call per movie: details + release dates + videos via append_to_response.
+        // A movie that fails to load is dropped instead of breaking the whole carousel.
         const moviesWithDetails = await Promise.all(
           movieData.map(async (movie) => {
-            // Fetch movie details to get IMDb ID
-            const detailsResponse = await axios.get(
-              `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${Apis.apiKey}&language=en-US`
-            );
-            const releaseDatesResponse = await axios.get(
-              `https://api.themoviedb.org/3/movie/${movie.id}/release_dates?api_key=${Apis.apiKey}`
-            );
+            try {
+              const { data: details } = await tmdbGet(
+                `https://api.themoviedb.org/3/${isTv ? "tv" : "movie"}/${movie.id}`,
+                {
+                  params: {
+                    api_key: Apis.apiKey,
+                    language: "en-US",
+                    // "images" brings the official title logos (transparent PNGs) in the same call.
+                    append_to_response: isTv
+                      ? "content_ratings,videos,images,external_ids"
+                      : "release_dates,videos,images",
+                    include_image_language: "en,null",
+                  },
+                }
+              );
 
-            // Get certification for the US
-            const usReleaseData = releaseDatesResponse.data.results.find(
-              (release) => release.iso_3166_1 === "US"
-            );
-            let certification = null;
-            if (usReleaseData && usReleaseData.release_dates.length > 0) {
-              certification = usReleaseData.release_dates[0].certification;
+              const usRelease = details.release_dates?.results?.find(
+                (release) => release.iso_3166_1 === "US"
+              );
+              const certification = isTv
+                ? details.content_ratings?.results?.find((r) => r.iso_3166_1 === "US")?.rating
+                : usRelease?.release_dates?.[0]?.certification;
+              const trailer = details.videos?.results?.find((vid) => vid.type === "Trailer");
+              const logos = details.images?.logos ?? [];
+              const logo = logos.find((l) => l.iso_639_1 === "en") ?? logos[0];
+
+              return {
+                ...movie,
+                title: details.title ?? details.name,
+                release_date: details.release_date ?? details.first_air_date,
+                imdb_id: isTv ? details.external_ids?.imdb_id : details.imdb_id,
+                runtime: isTv ? null : details.runtime,
+                seasons: isTv ? details.number_of_seasons : null,
+                genres: details.genres.map((genre) => genre.name).join(" • "),
+                certification: certification || "Not Rated",
+                trailerUrl: trailer ? `https://www.youtube.com/watch?v=${trailer.key}` : null,
+                logoUrl: logo ? `https://image.tmdb.org/t/p/w500${logo.file_path}` : null,
+              };
+            } catch (error) {
+              console.error(`Error fetching TMDB details for ${movie.id}:`, error);
+              return null;
             }
-            // Get the trailer information
-            const trailerResponse = await axios.get(
-              `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${Apis.apiKey}&language=en-US`
-            );
-
-            // Find the trailer URL
-            const trailer = trailerResponse.data.results.find(
-              (vid) => vid.type === "Trailer"
-            );
-            const genres = detailsResponse.data.genres
-              .map((genre) => genre.name)
-              .join(" • ");
-            return {
-              ...movie,
-              imdb_id: detailsResponse.data.imdb_id,
-              runtime: detailsResponse.data.runtime,
-              genres: genres,
-              certification: certification || "Not Rated",
-              trailerUrl: trailer
-                ? `https://www.youtube.com/watch?v=${trailer.key}`
-                : null,
-            };
           })
         );
         const uniqueMovies = Array.from(
-          new Map(moviesWithDetails.map((movie) => [movie.imdb_id, movie])).values()
+          new Map(
+            moviesWithDetails.filter((m) => m?.imdb_id).map((movie) => [movie.imdb_id, movie])
+          ).values()
         );
         setMovies(uniqueMovies);
-        setSelectedMovie(moviesWithDetails[0]);
+        setSelectedMovie(uniqueMovies[0]);
+        // Logos are small transparent PNGs: fetch them all up front.
+        uniqueMovies.forEach((m) => preload(m.logoUrl, (src) => loadedLogos.add(src)));
       } catch (error) {
         console.error("Error fetching movies:", error);
       }
     }
-  }, [data]);
+  }, [data, isTv]);
 
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
+
+  // Backdrops are large: preload only the neighbouring slides so the next one never shows blank.
+  useEffect(() => {
+    if (!selectedMovie || movies.length === 0) return;
+    const i = movies.findIndex((m) => m.imdb_id === selectedMovie.imdb_id);
+    if (i < 0) return;
+    preload(backdropUrl(movies[(i + 1) % movies.length]));
+    preload(backdropUrl(movies[(i - 1 + movies.length) % movies.length]));
+  }, [selectedMovie, movies]);
 
   const handleSlideChangeTransitionStart = useCallback(
     (swiper) => {
@@ -99,20 +183,7 @@ const NavBarCarousel = () => {
     [movies]
   );
 
-  const handleResize = useCallback(() => {
-    const windowWidth = window.innerWidth;
-    if (windowWidth < 320) {
-      setShowingCards(2);
-    } else if (windowWidth < 425) {
-      setShowingCards(3);
-    } else if (windowWidth < 768) {
-      setShowingCards(4);
-    } else if (windowWidth < 1024) {
-      setShowingCards(4);
-    } else {
-      setShowingCards(4);
-    }
-  }, []);
+  const handleResize = useCallback(() => setShowingCards(cardsForWidth(window.innerWidth)), []);
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -128,99 +199,138 @@ const NavBarCarousel = () => {
     <>
       {movies?.length > 0 && (
         <motion.div
-          className={`flex s:flex-col s:p-3  l:items-center md:items-stretch  lg:items-end lg:py-6 backdrop:blur-sm lg:justify-evenly  l:justify-center l:p-1 l:min-h-[400px]  md:min-h-[95vh] w-full bg-cover bg-center z-30 l:flex l:flex-col lg:flex-row  overflow-hidden transition-transform transform scale-100 duration-300 ease-in-out `}
-          style={{
-            backgroundImage: `url(https://image.tmdb.org/t/p/w1280/${selectedMovie?.backdrop_path})`,
-          }}
-          initial={{ scale: 1.2, opacity: 0 }} // Initial state for background
-          animate={{ scale: 1, opacity: 1 }} // Animation on load
-          transition={{ duration: 0.8, ease: "easeInOut" }} // Duration of the animation
+          className={`relative flex s:flex-col s:p-3  l:items-center md:items-stretch  lg:items-end lg:py-10 lg:justify-between l:justify-center l:p-1 l:min-h-[400px]  md:min-h-[95vh] w-full bg-[#0b0614] z-30 l:flex l:flex-col lg:flex-row gap-8 overflow-hidden`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: EASE }}
         >
-          {/* Left Poster */}
-          {/* Movie Information */}
+          {/* Backdrop: crossfades smoothly between movies instead of switching abruptly */}
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={backdropUrl(selectedMovie) ?? "none"}
+              className="absolute inset-0 z-0 bg-cover bg-center"
+              style={{
+                backgroundImage: backdropUrl(selectedMovie) ? `url(${backdropUrl(selectedMovie)})` : "none",
+              }}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, ease: EASE }}
+            />
+          </AnimatePresence>
 
-          <div className="absolute inset-0 bg-black opacity-10 z-0"></div>
+          {/* Shade the left (text) side and the bottom so title and copy stay readable on any backdrop */}
+          <div className="absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent"></div>
+          <div className="absolute inset-x-0 bottom-0 h-1/3 z-0 bg-gradient-to-t from-[#0b0614] to-transparent"></div>
+
+          {/* From lg up, text + posters sit in the same centred container (and padding) as the
+              navbar, so the title lines up with the logo. Below lg, "contents" makes this wrapper
+              invisible to layout, keeping the mobile/tablet arrangement unchanged. */}
+          <div className="contents lg:relative lg:z-10 lg:container lg:mx-auto lg:px-6 lg:flex lg:items-end lg:justify-between lg:gap-8">
+          {/* Movie info: one staggered fade-up per slide */}
           <motion.div
             key={selectedMovie?.imdb_id}
-            initial={{ opacity: 0, y: -20 }} // Initial state for title
-            animate={{ opacity: 1, y: 0 }} // Animation on load
-            exit={{ opacity: 0, y: -20 }} // Animation when title changes
-            transition={{ duration: 0.5 }} // Duration of the animation
-            className="text-white space-y-4 s:mt-12  shrink  l:text-sm l:px-2  l:mt-10 lg:mt-0 lg:me-28 l:max-w-screen-l lg:w-full z-10  "
+            variants={heroContainer}
+            initial="hidden"
+            animate="show"
+            className="relative text-white space-y-4 2xl:space-y-5 s:mt-12 shrink l:text-sm l:px-2 l:mt-10 lg:mt-0 lg:text-base 2xl:text-lg w-full min-w-0 lg:flex-1 lg:max-w-xl xl:max-w-2xl 2xl:max-w-3xl z-10"
           >
             <motion.h2
-              className="lg:text-5xl font-gilroy font-thin s:text-3xl l:text-3xl line-clamp-1"
-              key={`${selectedMovie?.imdb_id}-${new Date().getTime()}`}
-              initial={{ opacity: 0, y: -20 }} // Initial state for title
-              animate={{ opacity: 1, y: 0 }} // Animation on load for title
-              transition={{ duration: 0.6 }}
+              variants={heroTitle}
+              className="font-gilroy font-bold leading-tight s:text-3xl l:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl line-clamp-2 drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]"
             >
-              {selectedMovie?.title}
+              <HeroTitle movie={selectedMovie} />
             </motion.h2>
-            <div className="bg-gray-400 h-px w-2/4 mb-4"></div>
-            <div className="flex items-center space-x-4  s:text-base ">
-              <span className=" font-gilroy">
-                {selectedMovie?.release_date?.split("-")[0]} • {selectedMovie?.runtime}{" "}
-                min
-              </span>
-              <span className="flex items-center   space-x-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1em"
-                  height="1em"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  role="img"
-                  className="text-gray-400"
-                >
-                  <path fill="currentColor" d="M12 12H6v2h6zM18 12h-4v2h4z"></path>
-                  <path
-                    fill="currentColor"
-                    d="M21.196 4.805C20.391 4 19.354 4 17.786 4H6.214c-1.569 0-2.605 0-3.41.805C2 5.608 2 6.645 2 8.214v11.903a.501.501 0 0 0 .757.429l4.005-2.403A.997.997 0 0 1 7.277 18h10.509c1.569 0 2.605 0 3.411-.805.803-.804.803-1.841.803-3.41V8.214c0-1.569 0-2.606-.804-3.409M20 14.558c0 .961-.51 1.442-1.431 1.442H7c-.363 0-.718.099-1.029.285l-1.668 1.001A.2.2 0 0 1 4 17.114V7.442C4 6.481 4.51 6 5.431 6H18.57c.92 0 1.43.481 1.43 1.442z"
-                  ></path>
-                </svg>
-                <span className="text-slate-400  px-1 font-libre  rounded">
-                  {selectedMovie?.certification}{" "}
+
+            <motion.div
+              variants={heroItem}
+              className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm 2xl:text-base text-gray-200 font-medium"
+            >
+              {selectedMovie?.vote_average > 0 && (
+                <span className="flex items-center gap-1 font-semibold text-amber-300">
+                  <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                    <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9l-5.2 2.7 1-5.8L1.5 7.7l5.9-.9z" />
+                  </svg>
+                  {selectedMovie.vote_average.toFixed(1)}
                 </span>
-              </span>
-            </div>
-            <div className=" font-libre  s:text-base text-slate-400">
-              {selectedMovie?.genres}
-            </div>
+              )}
+              {selectedMovie?.release_date && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-white/40" />
+                  <span>{selectedMovie.release_date.split("-")[0]}</span>
+                </>
+              )}
+              {selectedMovie?.runtime > 0 && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-white/40" />
+                  <span>{formatRuntime(selectedMovie.runtime)}</span>
+                </>
+              )}
+              {selectedMovie?.seasons > 0 && (
+                <>
+                  <span className="h-1 w-1 rounded-full bg-white/40" />
+                  <span>
+                    {selectedMovie.seasons} Season{selectedMovie.seasons > 1 ? "s" : ""}
+                  </span>
+                </>
+              )}
+              {selectedMovie?.certification && selectedMovie.certification !== "Not Rated" && (
+                <span className="rounded border border-white/40 px-1.5 py-px text-xs font-semibold tracking-wide">
+                  {selectedMovie.certification}
+                </span>
+              )}
+            </motion.div>
+
+            {selectedMovie?.genres && (
+              <motion.div variants={heroItem} className="flex flex-wrap gap-2">
+                {selectedMovie.genres.split(" • ").map((genre) => (
+                  <span
+                    key={genre}
+                    className="rounded-full bg-white/10 px-3 py-1 text-xs 2xl:text-sm text-gray-100 ring-1 ring-white/15 backdrop-blur-sm"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </motion.div>
+            )}
+
             <motion.p
-              className=" font-gilroy s:line-clamp-3   s:text-base text-slate-400 l:line-clamp-5 md:line-clamp-4"
-              key={selectedMovie?.imdb_id}
-              initial={{ opacity: 0, y: 20 }} // Initial state for description
-              animate={{ opacity: 1, y: 0 }} // Animation on load for description
-              transition={{ duration: 0.6 }} // Duration of the animation
+              variants={heroItem}
+              className="font-gilroy leading-relaxed text-gray-300 s:text-base line-clamp-3 lg:max-w-lg 2xl:max-w-2xl"
             >
               {selectedMovie?.overview}
             </motion.p>
-            {/* Watch Now Button */}
-            <button className="bg-yellow-500  s:text-base text-black px-6 py-2 rounded flex items-center space-x-2 font-bold">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1em"
-                height="1em"
-                fill="none"
-                viewBox="0 0 24 24"
-                role="img"
-                className="text-black"
+
+            <motion.div variants={heroItem} className="flex flex-wrap items-center gap-3 pt-1">
+              <Link
+                to={`/dashboard/${isTv ? "tvSeries" : "movie"}/${selectedMovie?.imdb_id}`}
+                className="inline-flex items-center gap-2 rounded-full bg-yellow-400 px-7 py-3 font-bold text-black shadow-lg shadow-yellow-500/20 transition duration-200 hover:scale-[1.03] hover:bg-yellow-300 active:scale-95"
               >
-                <path
-                  fill="currentColor"
-                  d="M19.622 10.393A105.98 105.98 0 0 0 6.419 3.176c-1.2-.55-2.572.25-2.663 1.558-.167 2.4-.256 4.82-.256 7.262 0 2.444.088 4.868.256 7.27.092 1.307 1.464 2.108 2.663 1.558a106.112 106.112 0 0 0 13.203-7.217 1.91 1.91 0 0 0 0-3.214"
-                ></path>
-              </svg>
-              <span>
-                <Link to={`/dashboard/movie/${selectedMovie?.imdb_id}`}>Watch Now</Link>
-              </span>
-            </button>
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                  <path d="M19.622 10.393A105.98 105.98 0 0 0 6.419 3.176c-1.2-.55-2.572.25-2.663 1.558-.167 2.4-.256 4.82-.256 7.262 0 2.444.088 4.868.256 7.27.092 1.307 1.464 2.108 2.663 1.558a106.112 106.112 0 0 0 13.203-7.217 1.91 1.91 0 0 0 0-3.214" />
+                </svg>
+                Watch Now
+              </Link>
+              {selectedMovie?.trailerUrl && (
+                <a
+                  href={selectedMovie.trailerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 font-semibold text-white backdrop-blur-md transition duration-200 hover:border-white/40 hover:bg-white/20 active:scale-95"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <rect x="2.5" y="5" width="19" height="14" rx="3" />
+                    <path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none" />
+                  </svg>
+                  Trailer
+                </a>
+              )}
+            </motion.div>
           </motion.div>
 
           {/* Right Poster */}
           <motion.div
-            className="relative s:hidden md:block lg:min-w-[37rem]  l:min-w-[14rem]  border-[1px_solid_rgba(255,255,255,0.1)] z-10 "
+            className="relative s:hidden md:block l:min-w-[14rem] lg:w-[46%] lg:min-w-0 lg:shrink-0 xl:w-auto xl:min-w-[37rem] border-[1px_solid_rgba(255,255,255,0.1)] z-10 "
             initial={{ opacity: 0, scale: 0.9 }} // Initial state for Swiper
             animate={{ opacity: 1, scale: 1 }} // Animation on load
             transition={{ duration: 0.6 }} // Duration of the animation
@@ -236,6 +346,8 @@ const NavBarCarousel = () => {
                 pauseOnMouseEnter: "onclick",
               }}
               mousewheel={true}
+              // Clicking a side card brings it to the centre (and updates the hero via onSlideChange).
+              slideToClickedSlide={true}
               loop={true}
               coverflowEffect={{
                 rotate: 10,
@@ -249,13 +361,15 @@ const NavBarCarousel = () => {
               }
               pagination={{ clickable: true }}
               modules={[EffectCoverflow, Pagination, Autoplay, Navigation, Mousewheel]}
-              className=" w-full lg:max-w-2xl py-8  perspective-1500  md:max-w-[35rem]  l:max-w-md 2xl:max-w-[42rem]"
+              className=" w-full lg:max-w-2xl py-8  perspective-1500  md:max-w-[35rem]  l:max-w-md 2xl:max-w-[50rem]"
             >
               {movies.map((e, i) => (
                 <SwiperSlide key={`${e.imdb_id}-${i}`}>
                   <div className=" *:rounded-lg cursor-pointer ">
                     <motion.img
-                      className=" lg:w-40 lg:h-60 object-cover l:w-32 l:h-30 "
+                      // Fixed sizes give the coverflow its 3D overlap. Only on 1024–1279px (narrow
+                      // carousel column) do posters fill the slide instead, so they don't pile up.
+                      className="object-cover l:w-32 l:h-30 lg:w-full lg:h-auto lg:aspect-[2/3] xl:w-40 xl:h-60 xl:aspect-auto 2xl:w-48 2xl:h-72"
                       src={`https://image.tmdb.org/t/p/w500/${e.poster_path}`}
                       alt={e.title}
                       initial={{ opacity: 0, scale: 0.9 }} // Initial state for image
@@ -267,6 +381,7 @@ const NavBarCarousel = () => {
               ))}
             </Swiper>
           </motion.div>
+          </div>
         </motion.div>
       )}
     </>

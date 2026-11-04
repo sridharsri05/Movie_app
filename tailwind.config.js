@@ -1,6 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-import { Variants } from 'antd/es/config-provider';
-import { extend } from 'lodash';
 import defaultTheme from 'tailwindcss/defaultTheme';
 
 
@@ -39,7 +37,7 @@ export default {
 
       },
       fontFamily: {
-        libre: ['"Poppins"', ...defaultTheme.fontFamily.sans], gilroy: "Gilroy",
+        libre: ['"Poppins"', ...defaultTheme.fontFamily.sans], gilroy: ['"Gilroy"', '"Poppins"', ...defaultTheme.fontFamily.sans],
       },
       gridColumn: {
         'span-1.5': 'span 1.5 / span 1.5',
