@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoading, signUp } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { authErrorMessage } from "../utils/authError";
 import GoogleSignin from "../utils/GoogleSignin";
 import svg1 from "/avatar-makata-vespa-04-2@2x.png";
 import svg2 from "/avatar-makata-vespa-04-1@2x.png";
@@ -55,21 +56,8 @@ const SignUp = () => {
       .catch((error) => {
         dispatch(setLoading(false));
         console.log(error, "error");
-        if (error) {
-          // CORS error
-          toast.error(error?.error?.message, {
-            position: "top-right",
-            autoClose: 3000,
-          });
-          console.error("CORS policy error: Request blocked by server");
-        } else {
-          // Other errors
-          toast.error(error.error.message ? error.error.message : error, {
-            position: "top-right",
-            autoClose: 3000,
-          });
-          console.error("Registration failed:", error.error.message);
-        }
+        toast.error(authErrorMessage(error), { position: "top-right", autoClose: 4000, toastId: "auth-error" });
+        console.error("Registration failed:", error);
       });
   };
 

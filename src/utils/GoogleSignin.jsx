@@ -3,6 +3,7 @@ import { app } from "../components/firebase/Firebase";
 import { useDispatch } from "react-redux";
 import { googleSign, setLoading } from "../Redux/authSlice";
 import { toast } from "react-toastify";
+import { authErrorMessage } from "./authError";
 import { useNavigate } from "react-router-dom";
 import svg6 from "../../public/flatcoloriconsgoogle.svg";
 
@@ -41,11 +42,9 @@ const GoogleSignin = () => {
     } catch (error) {
       dispatch(setLoading(false));
 
-      toast.error(error?.message || error.error, {
-        position: "top-right",
-        autoClose: 2000,
-      });
-      console.log(error.error, "can't signin with google");
+      // was toast.error(error.error): an object, so the toast rendered empty
+      toast.error(authErrorMessage(error), { position: "top-right", autoClose: 4000, toastId: "auth-error" });
+      console.error("Google sign-in failed:", error);
     }
   };
 

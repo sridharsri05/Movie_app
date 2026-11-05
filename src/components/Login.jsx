@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, setLoading } from "../Redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { authErrorMessage } from "../utils/authError";
 import GoogleSignin from "../utils/GoogleSignin";
 import svg1 from "/avatar-makata-vespa-04-2@2x.png";
 import svg2 from "/avatar-makata-vespa-04-1@2x.png";
@@ -57,22 +58,8 @@ const Login = () => {
         const { error } = response.payload;
         dispatch(setLoading(false));
 
-        if (error && error === "Network Error") {
-          toast.error("Cors Orgin error", {
-            position: "top-right",
-            autoClose: 2000,
-          });
-        } else if (error) {
-          toast.error(error.message, {
-            position: "top-right",
-            autoClose: 2000,
-          });
-        } else {
-          toast.error(error.error.message, {
-            position: "top-right",
-            autoClose: 2000,
-          });
-        }
+        // one readable message for every failure shape (the old else-branch crashed on undefined)
+        toast.error(authErrorMessage(response.payload), { position: "top-right", autoClose: 4000, toastId: "auth-error" });
 
         // Handle login failure
         console.error("Login failed: dedddd", error);
