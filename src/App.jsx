@@ -1,12 +1,12 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "./utils/ProtectedRoute";
-import AdminDashboard from "./components/AdminDashboard";
 import useAuthInitialization from "./Hooks/useAuthInitialization";
 import DashboardLayout from "./components/Layout/DashboardLayout";
 import Spinner from "./Spinner/Spinner";
 import React, { Suspense } from "react";
 
+const AdminDashboard = React.lazy(() => import("./components/AdminDashboard"));
 const TvShows = React.lazy(() => import("./components/recentlyadded/TvShows"));
 const Dashboard = React.lazy(() => import("./components/Dashboard"));
 const PrivacyPolicy = React.lazy(() => import("./components/Privacy/PrivacyPolicy"));

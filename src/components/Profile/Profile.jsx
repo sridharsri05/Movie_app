@@ -7,8 +7,7 @@ import {
 } from "../../Redux/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { libraryApi } from "../../Redux/Services/LibraryApi";
-import { app } from "../firebase/Firebase";
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
+import { getFirebase } from "../firebase/Firebase";
 
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
@@ -83,7 +82,18 @@ const Profile = () => {
   }, [image]);
 
   const handleFileUpload = async (image) => {
-    const storage = getStorage(app);
+    let storageApi;
+    let storage;
+    try {
+      const [app, mod] = await Promise.all([getFirebase(), import("firebase/storage")]);
+      storageApi = mod;
+      storage = mod.getStorage(app);
+    } catch (error) {
+      setImageError(true);
+      console.log("Error loading storage:", error);
+      return;
+    }
+    const { getDownloadURL, ref, uploadBytesResumable } = storageApi;
     const fileName = new Date().getTime() + image.name;
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, image);

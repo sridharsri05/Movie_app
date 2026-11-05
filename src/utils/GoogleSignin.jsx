@@ -1,5 +1,4 @@
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
-import { app } from "../components/firebase/Firebase";
+import { getFirebase, preloadFirebaseAuth } from "../components/firebase/Firebase";
 import { useDispatch } from "react-redux";
 import { googleSign, setLoading } from "../Redux/authSlice";
 import { toast } from "react-toastify";
@@ -14,6 +13,10 @@ const GoogleSignin = () => {
   const googleSignin = async () => {
     dispatch(setLoading(true));
     try {
+      const [app, { GoogleAuthProvider, getAuth, signInWithPopup }] = await Promise.all([
+        getFirebase(),
+        import("firebase/auth"),
+      ]);
       const Provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const res = await signInWithPopup(auth, Provider);
@@ -50,7 +53,12 @@ const GoogleSignin = () => {
   };
 
   return (
-    <div onClick={googleSignin}>
+    <div
+      onClick={googleSignin}
+      onMouseEnter={preloadFirebaseAuth}
+      onFocus={preloadFirebaseAuth}
+      onTouchStart={preloadFirebaseAuth}
+    >
       <img src={svg6} alt="gooogle" className="rounded-21xl border size-6 " />
     </div>
   );

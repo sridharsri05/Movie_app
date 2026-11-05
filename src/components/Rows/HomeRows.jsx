@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLibrary } from "../../Redux/Services/LibraryApi";
 import { tmdbGet } from "../../api/tmdb";
 import { Apis } from "../../api/api";
 
@@ -385,6 +386,98 @@ const ServiceRow = ({ onOpen }) => {
 
 // Browse rows. variant="home" (movies dashboard) or "tv" (TV Shows page: TV-only Top 10, no
 // movie/series Trending row). Each row fetches its list (one cached TMDB call) only when scrolled near.
+// ---------- continue watching (from the account's watch history) ----------
+
+const timeAgo = (when) => {
+  const s = Math.max(0, (Date.now() - new Date(when).getTime()) / 1000);
+  if (s < 3600) return `${Math.max(1, Math.round(s / 60))}m ago`;
+  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+  if (s < 86400 * 7) return `${Math.round(s / 86400)}d ago`;
+  return new Date(when).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};
+const pad2 = (n) => String(n).padStart(2, "0");
+const resumeHref = (h) =>
+  h.type === "tv"
+    ? h.season != null && h.episode != null
+      ? `/dashboard/episodes/${h.imdbId}/${h.season}/${h.episode}`
+      : `/dashboard/tvSeries/${h.imdbId}`
+    : `/dashboard/movie/${h.imdbId}`;
+
+const ContinueCard = ({ item, index }) => {
+  // History stores an OMDb poster; prefer a wide TMDB backdrop (one cached lookup per title).
+  const [art, setArt] = useState(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    tmdbGet(`${TMDB}/find/${item.imdbId}`, { params: { external_source: "imdb_id" } })
+      .then(({ data }) => {
+        const hit = [...(data?.movie_results || []), ...(data?.tv_results || [])][0];
+        if (alive && hit) setArt(img("w780", hit.backdrop_path) || img("w342", hit.poster_path));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [item.imdbId]);
+  const src = art || (item.poster && item.poster !== "N/A" ? item.poster : null);
+  const episode = item.type === "tv" && item.season != null && item.episode != null;
+
+  return (
+    <Link
+      to={resumeHref(item)}
+      className="group w-64 shrink-0 snap-start sm:w-72 lg:w-80"
+      style={{ animation: `fadeUp .5s ${Math.min(index, 8) * 0.05}s both cubic-bezier(.22,1,.36,1)` }}
+    >
+      <div className={`${tileFrame} aspect-video`}>
+        {src && !failed ? (
+          <img src={src} alt={item.title} loading="lazy" onError={() => setFailed(true)} className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${art ? "" : "object-top"}`} />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-violet-900/50 to-rose-900/40 p-3 text-center font-gilroy font-semibold text-white/80">{item.title}</div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+        {episode && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-white ring-1 ring-white/20 backdrop-blur-sm">
+            S{pad2(item.season)} · E{pad2(item.episode)}
+          </span>
+        )}
+        <div className="absolute inset-x-3 bottom-2.5 flex items-end justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-gilroy text-sm font-semibold text-white">{item.title}</p>
+            <p className="text-[11px] text-white/60">Watched {timeAgo(item.watchedAt)}</p>
+          </div>
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-rose-500 text-white shadow-lg shadow-fuchsia-500/30 transition-transform duration-300 group-hover:scale-110">
+            <svg viewBox="0 0 24 24" className="ml-0.5 h-4 w-4" fill="currentColor" aria-hidden="true">
+              <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+// Shown only to signed-in users with history; hidden while loading or on error.
+const ContinueRow = ({ tvOnly }) => {
+  const { history, isLoading, isError } = useLibrary();
+  const items = (history || []).filter((h) => !tvOnly || h.type === "tv").slice(0, 12);
+  if (isLoading || isError || !items.length) return null;
+  return (
+    <MediaRow
+      id="continue"
+      title="Continue watching"
+      right={
+        <Link to="/dashboard/library/history" className="text-sm font-semibold text-gray-400 transition-colors hover:text-white">
+          See all
+        </Link>
+      }
+    >
+      {items.map((item, i) => (
+        <ContinueCard key={`${item.imdbId}-${item.season ?? ""}-${item.episode ?? ""}`} item={item} index={i} />
+      ))}
+    </MediaRow>
+  );
+};
+
 const HomeRows = ({ variant = "home" }) => {
   const onOpen = useOpenTitle();
   const tv = variant === "tv";
@@ -399,6 +492,7 @@ const HomeRows = ({ variant = "home" }) => {
   }, [hash]);
   return (
     <div className="bg-[#0b0614]">
+      <ContinueRow tvOnly={tv} />
       <ServiceRow onOpen={onOpen} />
       <Top10Row onOpen={onOpen} tvOnly={tv} />
       {!tv && <TrendingRow onOpen={onOpen} />}

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import moment from "moment-timezone";
 
 const useGreeting = () => {
   const [greeting, setGreeting] = useState("");
   const [showGreeting, setShowGreeting] = useState(false); // Initially set to false
 
   const getTimeOfDay = () => {
-    const userTimeZone = moment.tz.guess();
-    const currentTime = moment().tz(userTimeZone);
-    const currentHour = currentTime.hours();
+    // Local hour in the browser's own time zone (same result as moment-timezone's guessed zone).
+    const currentHour = new Date().getHours();
 
     if (currentHour >= 6 && currentHour < 12) {
       setGreeting("Good morning ☀️");

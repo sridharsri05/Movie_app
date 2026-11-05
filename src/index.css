@@ -65,3 +65,11 @@ body {
 /* .swiper-pagination-bullet:active {
     padding-right: 2rem;
 } */
+/* Gentle rise-in used by "Continue watching" cards */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    [style*="fadeUp"] { animation: none !important; }
+}
