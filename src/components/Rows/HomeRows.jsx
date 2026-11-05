@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { tmdbGet } from "../../api/tmdb";
+import { Apis } from "../../api/api";
 
-const TMDB = "https://api.themoviedb.org/3";
+const TMDB = `${Apis.baseURL}/tmdb`;
 const img = (size, path) => (path ? `https://image.tmdb.org/t/p/${size}${path}` : null);
 
 // ---------- data ----------

@@ -81,7 +81,7 @@ const NavBarCarousel = ({ type = "movie" }) => {
   const [tvList, setTvList] = useState(null);
   useEffect(() => {
     if (!isTv) return;
-    tmdbGet("https://api.themoviedb.org/3/trending/tv/week")
+    tmdbGet(`${Apis.baseURL}/tmdb/trending/tv/week`)
       .then(({ data }) => setTvList(data))
       .catch((err) => console.error("Error fetching trending TV:", err));
   }, [isTv]);
@@ -105,10 +105,9 @@ const NavBarCarousel = ({ type = "movie" }) => {
           movieData.map(async (movie) => {
             try {
               const { data: details } = await tmdbGet(
-                `https://api.themoviedb.org/3/${isTv ? "tv" : "movie"}/${movie.id}`,
+                `${Apis.baseURL}/tmdb/${isTv ? "tv" : "movie"}/${movie.id}`,
                 {
                   params: {
-                    api_key: Apis.apiKey,
                     language: "en-US",
                     // "images" brings the official title logos (transparent PNGs) in the same call.
                     append_to_response: isTv

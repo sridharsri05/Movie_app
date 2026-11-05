@@ -1,10 +1,10 @@
+/* global process */
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import sitemapPlugin from 'vite-plugin-sitemap';
 import axios from 'axios';
 import fs from 'fs/promises';
 import https from 'https';
-import { Apis } from './src/api/api';
 
 const hostname = 'https://movienexus-ruddy-nine.vercel.app';
 const staticRoutes = [
@@ -15,9 +15,11 @@ const staticRoutes = [
 ];
 
 async function fetchDynamicRoutes() {
-    const url = `https://api.themoviedb.org/3/movie/popular?api_key=${Apis.apiKey}`;
-
+    // Build-time only (never shipped to the browser). Without a key, fall back to movie-routes.json.
+    const apiKey = process.env.TMDB_API_KEY;
     try {
+        if (!apiKey) throw new Error('TMDB_API_KEY not set');
+        const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}`;
         const response = await axios.get(url, {
             timeout: 8000,
             httpsAgent: new https.Agent({ keepAlive: true }),

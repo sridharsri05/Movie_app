@@ -6,7 +6,7 @@ import { Apis } from "../../api/api";
 export const Tmd_API = createApi({
   reducerPath: "tmDB_API",
   baseQuery: fetchBaseQuery({
-    baseUrl: Apis.TMDB,
+    baseUrl: `${Apis.baseURL}/tmdb/`,
   }),
   endpoints: (builder) => ({
     // New endpoint for fetching popular movies
@@ -14,7 +14,6 @@ export const Tmd_API = createApi({
       query: (page = 1) => ({
         url: `movie/popular`,
         params: {
-          api_key: Apis.apiKey,
           language: "en-US",
           page: page,
         },

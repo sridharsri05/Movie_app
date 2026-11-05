@@ -40,7 +40,7 @@ export const googleSign = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       thunkAPI.dispatch(setLoading(true));
-      const response = await axios.post("/googleSignin", data);
+      const response = await axios.post("/googleSignin", { idToken: data.idToken });
 
       // Decode the token to extract user and role information
       const { userId } = jwtDecode(response.data.token);

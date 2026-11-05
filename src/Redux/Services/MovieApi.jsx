@@ -1,21 +1,20 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { Apis } from "../../api/api";
 
-const baseQuery = fetchBaseQuery({ baseUrl: Apis.OMBD_API });
-const OMBD_API_KEY = Apis.omdbKey;
+const baseQuery = fetchBaseQuery({ baseUrl: `${Apis.baseURL}/omdb` });
 
 export const omdbApi = createApi({
   reducerPath: "omdb_Api",
   baseQuery,
   endpoints: (builder) => ({
     searchMovies: builder.query({
-      query: (query) => `?apikey=${OMBD_API_KEY}&t=${query}`,
+      query: (query) => `?t=${encodeURIComponent(query)}`,
     }),
     searchByid: builder.query({
-      query: (imdbID) => `?apikey=${OMBD_API_KEY}&i=${imdbID}`,
+      query: (imdbID) => `?i=${encodeURIComponent(imdbID)}`,
     }),
     searchByQuery: builder.query({
-      query: ({ query, page }) => `?apikey=${OMBD_API_KEY}&s=${query}&page=${page} `,
+      query: ({ query, page }) => `?s=${encodeURIComponent(query)}&page=${page}`,
     }),
   }),
 });

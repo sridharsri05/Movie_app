@@ -40,10 +40,8 @@ const Login = () => {
     dispatch(setLoading(true));
     // Dispatch the login action with the form data
     dispatch(login(formData)).then((response) => {
-      console.log(response, "checkinggg");
       dispatch(setLoading(false));
       if (response && response.payload.status === "success") {
-        console.log("User successfully logged in:", response.payload);
         toast.success(response.payload.message, {
           position: "top-right",
           autoClose: 3000,

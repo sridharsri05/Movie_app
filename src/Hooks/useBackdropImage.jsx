@@ -6,7 +6,6 @@ const useBackdropImage = (imdbId) => {
   const [backdropUrl, setBackdropUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [ImageError, setImageError] = useState("");
-  const apiKey = Apis.apiKey;
 
   useEffect(() => {
     const fetchBackdrop = async () => {
@@ -16,10 +15,9 @@ const useBackdropImage = (imdbId) => {
       try {
         // Step 1: Get TMDB ID from IMDb ID
         const findResponse = await tmdbGet(
-          `https://api.themoviedb.org/3/find/${imdbId}`,
+          `${Apis.baseURL}/tmdb/find/${imdbId}`,
           {
             params: {
-              api_key: apiKey,
               external_source: "imdb_id",
             },
           }
@@ -30,12 +28,7 @@ const useBackdropImage = (imdbId) => {
 
         // Step 2: Get Movie Details using TMDB ID
         const movieResponse = await tmdbGet(
-          `https://api.themoviedb.org/3/movie/${tmdbId}`,
-          {
-            params: {
-              api_key: apiKey,
-            },
-          }
+          `${Apis.baseURL}/tmdb/movie/${tmdbId}`
         );
 
         const backdropPath = movieResponse.data.backdrop_path;
@@ -55,7 +48,7 @@ const useBackdropImage = (imdbId) => {
     if (imdbId) {
       fetchBackdrop();
     }
-  }, [imdbId, apiKey]);
+  }, [imdbId]);
 
   return { backdropUrl, loading, ImageError };
 };

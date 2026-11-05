@@ -12,7 +12,7 @@ import { Apis } from "../../api/api";
 import Spinner from "../../Spinner/Spinner";
 import Seo from "../../utils/Seo";
 
-const TMDB = "https://api.themoviedb.org/3";
+const TMDB = `${Apis.baseURL}/tmdb`;
 const IMG = "https://image.tmdb.org/t/p/w342";
 const FRAME = "mx-4 sm:mx-6 md:mx-8 lg:mx-10 xl:mx-12 2xl:mx-14 3xl:mx-16";
 

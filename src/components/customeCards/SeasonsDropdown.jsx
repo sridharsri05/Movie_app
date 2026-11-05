@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { tmdbGet } from "../../api/tmdb";
+import { Apis } from "../../api/api";
 
 const SeasonsDropdown = ({ seriesId }) => {
   const [seasons, setSeasons] = useState([]);
@@ -11,7 +12,7 @@ const SeasonsDropdown = ({ seriesId }) => {
     const fetchSeasons = async () => {
       try {
         const response = await tmdbGet(
-          `https://api.themoviedb.org/3/tv/${seriesId}`
+          `${Apis.baseURL}/tmdb/tv/${seriesId}`
         );
         setSeasons(response.data.seasons);
       } catch (error) {
@@ -21,7 +22,6 @@ const SeasonsDropdown = ({ seriesId }) => {
 
     fetchSeasons();
   }, [seriesId]);
-  console.log(seriesId, "series");
   // Fetch episodes when a season is selected
   useEffect(() => {
     const fetchEpisodes = async () => {
@@ -29,7 +29,7 @@ const SeasonsDropdown = ({ seriesId }) => {
 
       try {
         const response = await tmdbGet(
-          `https://api.themoviedb.org/3/tv/${seriesId}/season/${selectedSeason}`
+          `${Apis.baseURL}/tmdb/tv/${seriesId}/season/${selectedSeason}`
         );
         setEpisodes(response.data.episodes);
       } catch (error) {

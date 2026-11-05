@@ -17,12 +17,11 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${Apis.baseURL}/forgot-password`, { email });
+      await axios.post(`${Apis.baseURL}/forgot-password`, { email });
       toast.success("Reset link sent to your email!", {
         position: "top-right",
         autoClose: 3000,
       });
-      console.log(response);
     } catch (error) {
       // Handle errors (e.g., show error message)
       console.error(error);

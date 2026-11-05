@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { tmdbGet } from "../../api/tmdb";
+import { Apis } from "../../api/api";
 
-const TMDB = "https://api.themoviedb.org/3";
+const TMDB = `${Apis.baseURL}/tmdb`;
 const thumb = (path) => (path ? `https://image.tmdb.org/t/p/w92${path}` : null);
 
 const routeFor = (type, imdbId) =>

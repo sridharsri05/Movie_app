@@ -5,8 +5,6 @@ import { selectAuth } from "../Redux/authSlice";
 
 const ProtectedRoute = ({ allowedRoles, ...props }) => {
   const { isAuthenticated, role } = useSelector(selectAuth);
-  console.log(isAuthenticated, "auth");
-  console.log(role, "auth");
 
   // If role is not defined, redirect to unauthorized page or handle it as needed
   if (typeof role === "undefined") {

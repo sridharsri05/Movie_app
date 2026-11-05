@@ -1,14 +1,14 @@
 import axios from "axios";
-import { Apis } from "./api";
 
-// Drop-in replacement for axios.get for TMDB requests. Responses are cached in memory
+// Drop-in replacement for axios.get for TMDB requests, sent through our backend proxy (`${Apis.baseURL}/tmdb/...`),
+// which adds the API key server-side. Responses are cached in memory
 // for the session, and identical requests made at the same time share a single call,
 // so revisiting a movie/show page doesn't refetch everything.
 const cache = new Map();
 const MAX_ENTRIES = 300;
 
 export const tmdbGet = (url, config = {}) => {
-  const params = { api_key: Apis.apiKey, ...config.params };
+  const params = { ...config.params };
   const key = `${url}?${new URLSearchParams(params).toString()}`;
 
   if (cache.has(key)) return cache.get(key);

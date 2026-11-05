@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { tmdbGet } from "../../api/tmdb";
+import { Apis } from "../../api/api";
 import { MediaRow } from "../Rows/HomeRows";
 
-const TMDB = "https://api.themoviedb.org/3";
+const TMDB = `${Apis.baseURL}/tmdb`;
 const STILL = "https://image.tmdb.org/t/p/w500";
 const ease = [0.22, 1, 0.36, 1];
 const MAX_PILLS = 8;

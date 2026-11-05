@@ -11,7 +11,7 @@ import { Apis } from "../../api/api";
 import { MediaRow } from "../Rows/HomeRows";
 import { useLibraryItem, useRecordHistory } from "../../Redux/Services/LibraryApi";
 
-const TMDB = "https://api.themoviedb.org/3";
+const TMDB = `${Apis.baseURL}/tmdb`;
 const IMG = "https://image.tmdb.org/t/p/w342";
 
 const minsToHours = (value) => {

@@ -11,17 +11,19 @@ const instance = axios.create({
   baseURL: isDev ? LOCAL_SERVER : "https://server-flax-eight.vercel.app/",
 });
 
+// Send the login token with every request to our API, so protected routes (profile update,
+// account deletion, ...) can verify who is calling. The server accepts the raw JWT.
+instance.interceptors.request.use((config) => {
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("authToken") : null;
+  if (token && !config.headers.Authorization) config.headers.Authorization = token;
+  return config;
+});
+
 export default instance;
 
-// All third-party API keys live here. Override with VITE_TMDB_API_KEY / VITE_OMDB_API_KEY
-// in Movie_app/.env; the defaults are the keys this app has always shipped with.
-const env = import.meta.env ?? {};
-
+// TMDB and OMDb are called through our backend (`${Apis.baseURL}/tmdb/...`, `${Apis.baseURL}/omdb`),
+// which holds the API keys.
 export const Apis = {
-  OMBD_API: "https://www.omdbapi.com/",
   VIDSRC_API: "https://vidsrc.to",
-  TMDB: "https://api.themoviedb.org/3/",
   baseURL: isDev ? LOCAL_SERVER : "https://server-flax-eight.vercel.app",
-  apiKey: env.VITE_TMDB_API_KEY || "bb666e560f71cab382892f0e4efa696e",
-  omdbKey: env.VITE_OMDB_API_KEY || "8d58c823",
 };

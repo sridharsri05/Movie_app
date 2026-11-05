@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { tmdbGet } from "../../api/tmdb";
+import { Apis } from "../../api/api";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import Seo from "../../utils/Seo";
@@ -84,7 +85,7 @@ const TabIcon = ({ k }) => {
 // look the title up on TMDB by IMDb id (one cached call) and use its poster instead.
 const TMDB_POSTER = "https://image.tmdb.org/t/p/w342";
 const findTmdbPoster = async (imdbId) => {
-  const { data } = await tmdbGet(`https://api.themoviedb.org/3/find/${imdbId}`, {
+  const { data } = await tmdbGet(`${Apis.baseURL}/tmdb/find/${imdbId}`, {
     params: { external_source: "imdb_id" },
   });
   const hit = [...(data?.movie_results || []), ...(data?.tv_results || [])].find((r) => r.poster_path);

@@ -17,12 +17,13 @@ const GoogleSignin = () => {
       const Provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const res = await signInWithPopup(auth, Provider);
+      // The server verifies this Firebase ID token; identity is never taken from the request body.
+      const idToken = await res.user.getIdToken();
       const data = {
-        username: res.user.displayName,
-        email: res.user.email,
+        idToken,
+        username: res.user.displayName, // display only; the server uses the verified token claims
         photo: res.user.photoURL,
       };
-      console.log(res);
       const signinData = await dispatch(googleSign(data)).unwrap();
       console.log(signinData, "data");
       if (signinData && signinData.status === "success") {

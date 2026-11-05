@@ -48,14 +48,12 @@ const SignUp = () => {
             position: "top-right",
             autoClose: 2000,
           });
-          console.log("User successfully registered:", response.message);
           dispatch(setLoading(false));
           navigate("/login");
         }
       })
       .catch((error) => {
         dispatch(setLoading(false));
-        console.log(error, "error");
         toast.error(authErrorMessage(error), { position: "top-right", autoClose: 4000, toastId: "auth-error" });
         console.error("Registration failed:", error);
       });

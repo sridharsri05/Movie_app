@@ -113,7 +113,6 @@ const Profile = () => {
       const resp = await dispatch(updateProfile(updatedUserData));
 
       if (resp) {
-        console.log(resp.payload, "from profile");
         toast.success(resp?.payload?.message, {
           position: "top-right",
           autoClose: 3000,
