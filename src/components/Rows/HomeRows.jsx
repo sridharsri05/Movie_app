@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useLibrary } from "../../Redux/Services/LibraryApi";
+import { useLibrary, useRemoveHistoryItemMutation } from "../../Redux/Services/LibraryApi";
 import { tmdbGet } from "../../api/tmdb";
 import { Apis } from "../../api/api";
 
@@ -17,6 +17,7 @@ const normalize = (r, fallbackType) => ({
   rating: r.vote_average,
   poster: r.poster_path,
   backdrop: r.backdrop_path,
+  popularity: r.popularity || 0,
 });
 
 // One cached TMDB list request; only runs once `enabled` (i.e. the row is near the viewport).
@@ -68,7 +69,7 @@ const useInView = (rootMargin = "400px") => {
 };
 
 // Our routes are keyed by IMDb id; TMDB lists aren't, so look it up only for the clicked title.
-const useOpenTitle = () => {
+export const useOpenTitle = () => {
   const navigate = useNavigate();
   return useCallback(
     async (item) => {
@@ -141,15 +142,33 @@ export const MediaRow = ({
   const update = useCallback(() => {
     const el = track.current;
     if (!el) return;
-    setEdges({ start: el.scrollLeft <= 4, end: el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 });
+    const start = el.scrollLeft <= 4;
+    const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    setEdges((prev) => (prev.start === start && prev.end === end ? prev : { start, end }));
   }, []);
 
   useEffect(() => {
     if (track.current) track.current.scrollLeft = 0;
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
   }, [update, trackKey]);
+
+  // Re-check the arrows whenever the row's contents or size change. Rows mount with a few skeletons
+  // that fit on screen; without this, "next" stayed disabled after the real titles loaded until the
+  // user scrolled the row by hand.
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return undefined;
+    const mo = new MutationObserver(update);
+    mo.observe(el, { childList: true });
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    ro?.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      mo.disconnect();
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [update]);
 
   const scroll = (dir) =>
     track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.85, behavior: "smooth" });
@@ -265,16 +284,63 @@ const Skeletons = ({ kind = "poster", count = 7 }) =>
 
 // ---------- rows ----------
 
-const Top10Row = ({ onOpen, tvOnly = false }) => {
+// Follows the platform picked in "Browse by service" (movies + series on it, ranked by TMDB's daily
+// popularity); "Everywhere" switches back to the global trending Top 10.
+const Top10Row = ({ onOpen, tvOnly = false, service }) => {
   const [ref, inView] = useInView();
-  const items = useTmdbList(tvOnly ? "trending/tv/day" : "trending/all/day", null, {
-    enabled: inView,
+  const [scope, setScope] = useState("service");
+  useEffect(() => setScope("service"), [service?.id]); // picking a platform jumps back to it
+  const byService = scope === "service" && Boolean(service);
+
+  const providerParams = service
+    ? { with_watch_providers: service.id, watch_region: "US", sort_by: "popularity.desc" }
+    : null;
+  const global = useTmdbList(tvOnly ? "trending/tv/day" : "trending/all/day", null, {
+    enabled: inView && !byService,
     limit: 10,
     type: tvOnly ? "tv" : undefined,
   });
+  const serviceTv = useTmdbList("discover/tv", providerParams, { enabled: inView && byService, type: "tv" });
+  const serviceMovies = useTmdbList("discover/movie", providerParams, {
+    enabled: inView && byService && !tvOnly,
+    type: "movie",
+  });
+
+  let items = global;
+  if (byService) {
+    items =
+      serviceTv && (tvOnly || serviceMovies)
+        ? [...serviceTv, ...(tvOnly ? [] : serviceMovies)].sort((a, b) => b.popularity - a.popularity).slice(0, 10)
+        : null;
+  }
+
+  const what = tvOnly ? "TV Shows" : "";
+  const title = byService ? `Top 10 ${what} on ${service.name} Today`.replace(/\s+/g, " ") : tvOnly ? "Top 10 TV Shows Today" : "Top 10 Today";
+
   return (
-    <MediaRow id="top10" title={tvOnly ? "Top 10 TV Shows Today" : "Top 10 Today"} sectionRef={ref}>
-      {items ? items.map((item, i) => <RankTile key={item.id} item={item} rank={i + 1} onOpen={onOpen} />) : <Skeletons count={6} />}
+    <MediaRow
+      id="top10"
+      title={title}
+      sectionRef={ref}
+      trackKey={`${scope}-${service?.id}`}
+      right={
+        service ? (
+          <Tabs
+            value={scope}
+            onChange={setScope}
+            options={[
+              { value: "service", label: service.name },
+              { value: "all", label: "Everywhere" },
+            ]}
+          />
+        ) : null
+      }
+    >
+      {items ? (
+        items.map((item, i) => <RankTile key={`${item.media_type}-${item.id}`} item={item} rank={i + 1} onOpen={onOpen} />)
+      ) : (
+        <Skeletons count={6} />
+      )}
     </MediaRow>
   );
 };
@@ -296,9 +362,9 @@ const TrendingRow = ({ onOpen }) => {
   );
 };
 
-const DiscoverRow = ({ id, title, params, onOpen }) => {
+const DiscoverRow = ({ id, title, params, onOpen, type = "tv" }) => {
   const [ref, inView] = useInView();
-  const items = useTmdbList("discover/tv", params, { enabled: inView, type: "tv" });
+  const items = useTmdbList(`discover/${type}`, params, { enabled: inView, type });
   return (
     <MediaRow id={id} title={title} sectionRef={ref}>
       {items ? items.map((item) => <PosterTile key={item.id} item={item} onOpen={onOpen} />) : <Skeletons />}
@@ -319,9 +385,8 @@ const SERVICES = [
   { id: 283, name: "Crunchyroll" },
 ];
 
-const ServiceRow = ({ onOpen }) => {
+const ServiceRow = ({ onOpen, service, setService }) => {
   const [ref, inView] = useInView();
-  const [service, setService] = useState(SERVICES[0]);
   const [type, setType] = useState("tv");
   const [logos, setLogos] = useState({});
 
@@ -421,13 +486,27 @@ const ContinueCard = ({ item, index }) => {
   }, [item.imdbId]);
   const src = art || (item.poster && item.poster !== "N/A" ? item.poster : null);
   const episode = item.type === "tv" && item.season != null && item.episode != null;
+  const [removeHistoryItem, { isLoading: removing }] = useRemoveHistoryItemMutation();
 
   return (
-    <Link
-      to={resumeHref(item)}
-      className="group w-64 shrink-0 snap-start sm:w-72 lg:w-80"
+    <div
+      className="group relative w-64 shrink-0 snap-start sm:w-72 lg:w-80"
       style={{ animation: `fadeUp .5s ${Math.min(index, 8) * 0.05}s both cubic-bezier(.22,1,.36,1)` }}
     >
+    {/* Sibling of the link (a button can't live inside <a>); shown on hover, always on touch screens. */}
+    <button
+      type="button"
+      onClick={() => removeHistoryItem(item.imdbId)}
+      disabled={removing}
+      aria-label={`Remove ${item.title} from Continue watching`}
+      title="Remove from history"
+      className="absolute right-2.5 top-2.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white/80 ring-1 ring-white/20 backdrop-blur-sm transition hover:bg-rose-500/80 hover:text-white focus-visible:opacity-100 disabled:opacity-50 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </svg>
+    </button>
+    <Link to={resumeHref(item)} className="block">
       <div className={`${tileFrame} aspect-video`}>
         {src && !failed ? (
           <img src={src} alt={item.title} loading="lazy" onError={() => setFailed(true)} className={`h-full w-full object-cover transition duration-500 group-hover:scale-105 ${art ? "" : "object-top"}`} />
@@ -453,6 +532,7 @@ const ContinueCard = ({ item, index }) => {
         </div>
       </div>
     </Link>
+    </div>
   );
 };
 
@@ -478,9 +558,29 @@ const ContinueRow = ({ tvOnly }) => {
   );
 };
 
+// YYYY-MM-DD for `days` ago. Day granularity keeps the request (and the proxy's cache key) stable all day.
+const daysAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+
+// Popular titles released in the last 60 days; unlike "Trending", old titles can't show up here.
+const hottestParams = (tv) =>
+  tv
+    ? { "first_air_date.gte": daysAgo(60), sort_by: "popularity.desc", "vote_count.gte": 10 }
+    : { "primary_release_date.gte": daysAgo(60), sort_by: "popularity.desc", "vote_count.gte": 20 };
+
+// Mainstream R / NC-17 films (US ratings). include_adult stays false: TMDB's "adult" flag means porn.
+const MATURE_PARAMS = {
+  certification_country: "US",
+  "certification.gte": "R",
+  include_adult: "false",
+  sort_by: "popularity.desc",
+  "vote_count.gte": 200,
+};
+
 const HomeRows = ({ variant = "home" }) => {
   const onOpen = useOpenTitle();
   const tv = variant === "tv";
+  // Shared by "Browse by service" and Top 10, so the Top 10 follows the selected platform.
+  const [service, setService] = useState(SERVICES[0]);
   // Navbar "Browse" links use /dashboard#anime etc.: scroll smoothly to that row.
   const { hash } = useLocation();
   useEffect(() => {
@@ -493,9 +593,16 @@ const HomeRows = ({ variant = "home" }) => {
   return (
     <div className="bg-[#0b0614]">
       <ContinueRow tvOnly={tv} />
-      <ServiceRow onOpen={onOpen} />
-      <Top10Row onOpen={onOpen} tvOnly={tv} />
+      <ServiceRow onOpen={onOpen} service={service} setService={setService} />
+      <Top10Row onOpen={onOpen} tvOnly={tv} service={service} />
       {!tv && <TrendingRow onOpen={onOpen} />}
+      <DiscoverRow
+        id="hottest"
+        title="Hottest Right Now"
+        type={tv ? "tv" : "movie"}
+        onOpen={onOpen}
+        params={hottestParams(tv)}
+      />
       <DiscoverRow
         id="anime"
         title="Anime"
@@ -508,6 +615,7 @@ const HomeRows = ({ variant = "home" }) => {
         onOpen={onOpen}
         params={{ with_genres: 18, with_original_language: "ko", sort_by: "popularity.desc" }}
       />
+      {!tv && <DiscoverRow id="mature" title="Mature (18+)" type="movie" onOpen={onOpen} params={MATURE_PARAMS} />}
     </div>
   );
 };

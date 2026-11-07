@@ -15,6 +15,46 @@ import { AnimatePresence, motion } from "framer-motion";
 
 
 const EASE = [0.22, 1, 0.36, 1];
+
+// Avatars render at most ~130px, so a 512px JPEG is plenty and keeps every upload far under the
+// bucket's 2 MB limit (phone photos are typically 3-6 MB).
+const AVATAR_MAX_PX = 512;
+
+async function shrinkImage(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("decode"));
+      el.src = url;
+    });
+    const scale = Math.min(1, AVATAR_MAX_PX / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.85));
+    if (!blob) throw new Error("encode");
+    return blob;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+const uploadErrorMessage = (error) => {
+  switch (error?.code) {
+    case "storage/unauthorized":
+      return "Upload not allowed";
+    case "storage/retry-limit-exceeded":
+    case "storage/network-request-failed":
+      return "Network error. Try again";
+    case "storage/quota-exceeded":
+      return "Storage is full. Try later";
+    default:
+      return "Upload failed. Try again";
+  }
+};
 // each section fades up on its own (no parent-variant propagation)
 const rise = (i = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -59,7 +99,7 @@ const Profile = () => {
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
-  const [imageError, setImageError] = useState(false);
+  const [imageError, setImageError] = useState(""); // message to show; "" = no error
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -82,6 +122,24 @@ const Profile = () => {
   }, [image]);
 
   const handleFileUpload = async (image) => {
+    // Each new pick starts clean, so an earlier failure doesn't stick around.
+    setImageError("");
+    setImagePercent(0);
+
+    if (!image.type.startsWith("image/")) {
+      setImageError("Please choose an image");
+      return;
+    }
+
+    let photo;
+    try {
+      photo = await shrinkImage(image);
+    } catch {
+      // e.g. HEIC on browsers that can't decode it
+      setImageError("Can't read this image. Try a JPG or PNG");
+      return;
+    }
+
     let storageApi;
     let storage;
     try {
@@ -89,14 +147,13 @@ const Profile = () => {
       storageApi = mod;
       storage = mod.getStorage(app);
     } catch (error) {
-      setImageError(true);
+      setImageError("Upload failed. Try again");
       console.log("Error loading storage:", error);
       return;
     }
     const { getDownloadURL, ref, uploadBytesResumable } = storageApi;
-    const fileName = new Date().getTime() + image.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, image);
+    const storageRef = ref(storage, `${Date.now()}.jpg`);
+    const uploadTask = uploadBytesResumable(storageRef, photo, { contentType: "image/jpeg" });
     uploadTask.on(
       "state_changed",
       (snapshot) => {
@@ -104,14 +161,20 @@ const Profile = () => {
         setImagePercent(Math.round(progress));
       },
       (error) => {
-        setImageError(true);
+        setImagePercent(0);
+        setImageError(uploadErrorMessage(error));
         console.log("Error uploading image:", error);
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setFormData({ ...formData, profilePicture: downloadURL });
-          setUpdateSuccess(true); // Set updateSuccess to true when download URL is obtained
-        });
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then((downloadURL) => {
+            setFormData((prev) => ({ ...prev, profilePicture: downloadURL }));
+            setUpdateSuccess(true);
+          })
+          .catch((error) => {
+            setImagePercent(0);
+            setImageError(uploadErrorMessage(error));
+          });
       }
     );
   };
@@ -134,7 +197,6 @@ const Profile = () => {
         autoClose: 3000,
       });
       console.error("Error updating profile:", error);
-      setImageError(true);
     }
     setSaving(false);
     setUpdateSuccess(true);
@@ -239,7 +301,9 @@ const Profile = () => {
               className="hidden"
               ref={fileRef}
               onChange={(e) => {
-                setImage(e.target.files[0]);
+                const file = e.target.files?.[0];
+                if (file) setImage(file);
+                e.target.value = ""; // allow picking the same file again after a failure
               }}
             />
 
@@ -253,7 +317,7 @@ const Profile = () => {
                 <AnimatePresence mode="wait">
                   {imageError ? (
                     <motion.span key="err" {...pop} className="rounded-full bg-rose-500/15 px-3 py-1 text-xs font-medium text-rose-200 ring-1 ring-rose-400/30">
-                      Upload failed (max 2 MB)
+                      {imageError}
                     </motion.span>
                   ) : imagePercent === 100 ? (
                     <motion.span key="ok" {...pop} className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-200 ring-1 ring-emerald-400/30">
