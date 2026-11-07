@@ -234,9 +234,9 @@ const EpisodeCard = ({ ep, index, current, onOpen, fallbackImg }) => {
           <span className="block truncate text-sm font-semibold text-white">{ep.name}</span>
           {meta && <span className="mt-0.5 block text-xs text-white/60">{meta}</span>}
           {ep.overview ? (
-            <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-white/70">{ep.overview}</span>
+            <span className="mt-1.5 line-clamp-2 text-xs leading-5 text-white/70">{ep.overview}</span>
           ) : upcoming ? (
-            <span className="mt-1.5 line-clamp-2 block text-xs leading-5 text-white/45">
+            <span className="mt-1.5 line-clamp-2 text-xs leading-5 text-white/45">
               Hasn&apos;t aired yet. Details will appear after release.
             </span>
           ) : null}

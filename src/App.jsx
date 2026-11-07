@@ -4,6 +4,7 @@ import ProtectedRoute from "./utils/ProtectedRoute";
 import useAuthInitialization from "./Hooks/useAuthInitialization";
 import DashboardLayout from "./components/Layout/DashboardLayout";
 import Spinner from "./Spinner/Spinner";
+import UpdatePrompt from "./components/UpdatePrompt";
 import React, { Suspense } from "react";
 
 const AdminDashboard = React.lazy(() => import("./components/AdminDashboard"));
@@ -65,6 +66,7 @@ function App() {
           <Route path="/unauthorized" element={<div>Unauthorized Access</div>} />
         </Routes>
       </Suspense>
+      <UpdatePrompt />
     </BrowserRouter>
   );
 }

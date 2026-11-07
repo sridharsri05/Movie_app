@@ -7,6 +7,22 @@ import fs from 'fs/promises';
 import https from 'https';
 
 const hostname = 'https://movienexus-ruddy-nine.vercel.app';
+
+// One ID per deploy. Baked into the bundle as __APP_VERSION__ and published as /version.json,
+// so open tabs can notice when a newer deploy is live (see src/components/UpdatePrompt.jsx).
+const APP_VERSION = process.env.VERCEL_GIT_COMMIT_SHA || `local-${Date.now()}`;
+
+const versionFilePlugin = () => ({
+    name: 'version-file',
+    apply: 'build',
+    generateBundle() {
+        this.emitFile({
+            type: 'asset',
+            fileName: 'version.json',
+            source: JSON.stringify({ version: APP_VERSION }),
+        });
+    },
+});
 const staticRoutes = [
     '/', '/signup', '/forgot-password', '/reset-password/:token',
     '/dashboard', '/dashboard/profile', '/dashboard/tvShows',
@@ -44,8 +60,12 @@ async function fetchDynamicRoutes() {
 export default defineConfig(async () => {
     const dynamicRoutes = await fetchDynamicRoutes();
     return {
+        define: {
+            __APP_VERSION__: JSON.stringify(APP_VERSION),
+        },
         plugins: [
             react(),
+            versionFilePlugin(),
             sitemapPlugin({
                 hostname,
                 routes: [...staticRoutes, ...dynamicRoutes],
