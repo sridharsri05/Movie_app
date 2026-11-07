@@ -111,6 +111,41 @@ const yearRange = (omdbYear, tv) => {
   return end === start ? start : `${start}–${end}`;
 };
 
+// OMDb lags on new series; build the same OMDb-shaped object from TMDB so the page still renders.
+// Resolves null if TMDB doesn't know the title either.
+const joinOr = (list, n) => (list?.length ? list.slice(0, n).join(", ") : "N/A");
+const fmtReleased = (d) =>
+  d ? new Date(`${d}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
+
+async function tmdbSeriesAsOmdb(imdbID) {
+  const { data: found } = await tmdbGet(`${TMDB}/find/${imdbID}`, { params: { external_source: "imdb_id" } });
+  const hit = found?.tv_results?.[0];
+  if (!hit) return null;
+  const { data: s } = await tmdbGet(`${TMDB}/tv/${hit.id}`, {
+    params: { append_to_response: "aggregate_credits,content_ratings" },
+  });
+  const first = (s.first_air_date || "").slice(0, 4);
+  const last = s.in_production ? "" : (s.last_air_date || "").slice(0, 4);
+  return {
+    Response: "True",
+    Title: s.name,
+    Year: first ? (last && last !== first ? `${first}–${last}` : `${first}–`) : "N/A",
+    Poster: s.poster_path ? `https://image.tmdb.org/t/p/w500${s.poster_path}` : "N/A",
+    Plot: s.overview || "N/A",
+    Genre: joinOr(s.genres?.map((g) => g.name), 4),
+    imdbRating: s.vote_count > 0 ? s.vote_average.toFixed(1) : "N/A",
+    Director: "N/A",
+    Writer: joinOr(s.created_by?.map((c) => c.name), 3),
+    Actors: joinOr(s.aggregate_credits?.cast?.map((c) => c.name), 4),
+    Released: fmtReleased(s.first_air_date),
+    Rated: s.content_ratings?.results?.find((r) => r.iso_3166_1 === "US")?.rating || "N/A",
+    Language: joinOr(s.spoken_languages?.map((l) => l.english_name), 3),
+    Country: joinOr(s.production_countries?.map((c) => c.name), 3),
+    Awards: "N/A",
+    totalSeasons: String(s.number_of_seasons || "N/A"),
+  };
+}
+
 function TvSeries() {
   const { imdbID, season, epi } = useParams();
   const navigate = useNavigate();
@@ -127,7 +162,13 @@ function TvSeries() {
     let alive = true;
     axios
       .post(`${Apis.baseURL}/getLatestMovies`, { imdbIds: [imdbID] })
-      .then(({ data }) => alive && setFallback(data?.[0] ?? false))
+      .then(({ data }) => {
+        const cached = data?.[0];
+        if (cached && cached.Response !== "False" && cached.Title) return cached;
+        return tmdbSeriesAsOmdb(imdbID);
+      })
+      .catch(() => tmdbSeriesAsOmdb(imdbID))
+      .then((details) => alive && setFallback(details || false))
       .catch(() => alive && setFallback(false));
     return () => {
       alive = false;

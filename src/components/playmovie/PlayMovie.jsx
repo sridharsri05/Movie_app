@@ -89,6 +89,44 @@ const fmtMoney = (v) =>
 
 
 
+// OMDb lags on new releases (e.g. tt50389959 returns "Incorrect IMDb ID" while TMDB already has it).
+// Build the same OMDb-shaped object from TMDB so the page still renders. Resolves null if TMDB
+// doesn't know the title either.
+const fmtReleased = (d) =>
+  d ? new Date(`${d}T00:00:00`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "N/A";
+const joinOr = (list, n) => (list?.length ? list.slice(0, n).join(", ") : "N/A");
+
+async function tmdbMovieAsOmdb(imdbID) {
+  const { data: found } = await tmdbGet(`${TMDB}/find/${imdbID}`, { params: { external_source: "imdb_id" } });
+  const hit = found?.movie_results?.[0];
+  if (!hit) return null;
+  const { data: m } = await tmdbGet(`${TMDB}/movie/${hit.id}`, {
+    params: { append_to_response: "credits,release_dates" },
+  });
+  const crew = m.credits?.crew || [];
+  const usRelease = m.release_dates?.results?.find((r) => r.iso_3166_1 === "US");
+  const rated = usRelease?.release_dates?.map((r) => r.certification).find(Boolean);
+  return {
+    Response: "True",
+    Title: m.title,
+    Year: (m.release_date || "").slice(0, 4) || "N/A",
+    Poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : "N/A",
+    Plot: m.overview || "N/A",
+    Genre: joinOr(m.genres?.map((g) => g.name), 4),
+    Runtime: m.runtime ? `${m.runtime} min` : "N/A",
+    imdbRating: m.vote_count > 0 ? m.vote_average.toFixed(1) : "N/A",
+    Director: joinOr(crew.filter((c) => c.job === "Director").map((c) => c.name), 2),
+    Writer: joinOr([...new Set(crew.filter((c) => c.department === "Writing").map((c) => c.name))], 3),
+    Actors: joinOr(m.credits?.cast?.map((c) => c.name), 4),
+    Released: fmtReleased(m.release_date),
+    Rated: rated || "N/A",
+    Language: joinOr(m.spoken_languages?.map((l) => l.english_name), 3),
+    Country: joinOr(m.production_countries?.map((c) => c.name), 3),
+    Awards: "N/A",
+    BoxOffice: m.revenue > 0 ? fmtMoney(m.revenue) : "N/A",
+  };
+}
+
 const PlayMovie = () => {
   const { imdbID } = useParams();
   const navigate = useNavigate();
@@ -96,7 +134,8 @@ const PlayMovie = () => {
   const omdbOk = omdbData?.Response === "True";
 
   // If the browser's OMDb request fails (network hiccup, rate limit), fall back to our backend,
-  // which serves the same OMDb details from its 6h cache (with fixed posters).
+  // which serves the same OMDb details from its 6h cache (with fixed posters). If OMDb doesn't know
+  // the title at all (new releases), build the details from TMDB instead.
   // null = not tried / in progress, false = failed too.
   const [fallback, setFallback] = useState(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -106,7 +145,13 @@ const PlayMovie = () => {
     let alive = true;
     axios
       .post(`${Apis.baseURL}/getLatestMovies`, { imdbIds: [imdbID] })
-      .then(({ data }) => alive && setFallback(data?.[0] ?? false))
+      .then(({ data }) => {
+        const cached = data?.[0];
+        if (cached && cached.Response !== "False" && cached.Title) return cached;
+        return tmdbMovieAsOmdb(imdbID);
+      })
+      .catch(() => tmdbMovieAsOmdb(imdbID))
+      .then((details) => alive && setFallback(details || false))
       .catch(() => alive && setFallback(false));
     return () => {
       alive = false;
