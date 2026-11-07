@@ -8,6 +8,7 @@ const EASE = [0.22, 1, 0.36, 1];
 export const BROWSE_LINKS = [
   { label: "Top 10 Today", hint: "What everyone's watching", to: "/dashboard#top10", d: "M4 20V10M10 20V4M16 20v-7M22 20H2" },
   { label: "Trending", hint: "Hot movies & series today", to: "/dashboard#trending", d: "M3 17l6-6 4 4 8-8M14 7h7v7" },
+  { label: "Tamil & Indian", hint: "Trending Tamil, Telugu, Malayalam…", to: "/dashboard#regional", d: "M4 18h16M6 18V9l6-5 6 5v9M10 18v-5h4v5" },
   { label: "Hottest", hint: "Big new releases this month", to: "/dashboard#hottest", d: "M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5 .3 2 1.5 3 2.5 3-1-2.5-1-5 0-8z" },
   { label: "Anime", hint: "Popular Japanese animation", to: "/dashboard#anime", d: "M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z" },
   { label: "K-Drama", hint: "Top Korean dramas", to: "/dashboard#kdrama", d: "M4 6h16v12H4zM8 2l4 4 4-4" },

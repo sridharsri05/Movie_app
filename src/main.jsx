@@ -7,6 +7,9 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PersistGate } from "redux-persist/integration/react";
 import { HelmetProvider } from "react-helmet-async";
+import { enableContentProtection } from "./utils/contentProtection";
+
+enableContentProtection();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

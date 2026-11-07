@@ -73,3 +73,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
     [style*="fadeUp"] { animation: none !important; }
 }
+
+/* Content deterrents (see src/utils/contentProtection.js) */
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+html.mn-shield body {
+    filter: blur(24px);
+    transition: filter 0.1s;
+}
+@media print {
+    body { visibility: hidden !important; }
+}

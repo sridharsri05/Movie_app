@@ -103,7 +103,7 @@ const ArrowButton = ({ dir, disabled, onClick }) => (
 );
 
 const Tabs = ({ options, value, onChange }) => (
-  <div className="flex items-center gap-4">
+  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
     {options.map((o) => (
       <button
         key={o.value}
@@ -292,16 +292,14 @@ const Top10Row = ({ onOpen, tvOnly = false, service }) => {
   useEffect(() => setScope("service"), [service?.id]); // picking a platform jumps back to it
   const byService = scope === "service" && Boolean(service);
 
-  const providerParams = service
-    ? { with_watch_providers: service.id, watch_region: "US", sort_by: "popularity.desc" }
-    : null;
+  const params = service ? providerParams(service) : null;
   const global = useTmdbList(tvOnly ? "trending/tv/day" : "trending/all/day", null, {
     enabled: inView && !byService,
     limit: 10,
     type: tvOnly ? "tv" : undefined,
   });
-  const serviceTv = useTmdbList("discover/tv", providerParams, { enabled: inView && byService, type: "tv" });
-  const serviceMovies = useTmdbList("discover/movie", providerParams, {
+  const serviceTv = useTmdbList("discover/tv", params, { enabled: inView && byService, type: "tv" });
+  const serviceMovies = useTmdbList("discover/movie", params, {
     enabled: inView && byService && !tvOnly,
     type: "movie",
   });
@@ -362,6 +360,53 @@ const TrendingRow = ({ onOpen }) => {
   );
 };
 
+// Regional cinema, styled like "Trending Today". Popular titles from the last two years in the chosen
+// language (Tamil by default); on the TV Shows page it lists series instead.
+const REGIONAL = [
+  { value: "ta", label: "Tamil" },
+  { value: "te", label: "Telugu" },
+  { value: "ml", label: "Malayalam" },
+  { value: "hi", label: "Hindi" },
+  { value: "kn", label: "Kannada" },
+];
+
+const RegionalRow = ({ onOpen, tvOnly = false }) => {
+  const [ref, inView] = useInView();
+  const [lang, setLang] = useState("ta");
+  const type = tvOnly ? "tv" : "movie";
+  const since = daysAgo(730);
+  const items = useTmdbList(
+    `discover/${type}`,
+    {
+      with_original_language: lang,
+      sort_by: "popularity.desc",
+      [tvOnly ? "first_air_date.gte" : "primary_release_date.gte"]: since,
+      "vote_count.gte": 3,
+    },
+    { enabled: inView, type, needs: "backdrop" }
+  );
+  const label = REGIONAL.find((l) => l.value === lang)?.label;
+  return (
+    <MediaRow
+      id="regional"
+      title={`Trending ${label} ${tvOnly ? "Series" : "Movies"}`}
+      sectionRef={ref}
+      trackKey={lang}
+      right={<Tabs value={lang} onChange={setLang} options={REGIONAL} />}
+    >
+      {items ? (
+        items.length ? (
+          items.map((item) => <BackdropTile key={item.id} item={item} onOpen={onOpen} />)
+        ) : (
+          <p className="py-10 text-sm text-gray-400">Nothing trending in {label} right now.</p>
+        )
+      ) : (
+        <Skeletons kind="backdrop" count={4} />
+      )}
+    </MediaRow>
+  );
+};
+
 const DiscoverRow = ({ id, title, params, onOpen, type = "tv" }) => {
   const [ref, inView] = useInView();
   const items = useTmdbList(`discover/${type}`, params, { enabled: inView, type });
@@ -372,18 +417,32 @@ const DiscoverRow = ({ id, title, params, onOpen, type = "tv" }) => {
   );
 };
 
-// TMDB watch-provider ids (US region).
+// TMDB watch-provider ids. `region` is the catalogue to browse: the Indian services are only
+// listed for IN on TMDB, the rest use the US catalogue.
 const SERVICES = [
-  { id: 8, name: "Netflix" },
-  { id: 9, name: "Prime Video" },
-  { id: 337, name: "Disney+" },
-  { id: 1899, name: "Max" },
-  { id: 350, name: "Apple TV+" },
-  { id: 15, name: "Hulu" },
-  { id: 2303, name: "Paramount+" },
-  { id: 386, name: "Peacock" },
-  { id: 283, name: "Crunchyroll" },
+  { id: 8, name: "Netflix", region: "US" },
+  { id: 9, name: "Prime Video", region: "US" },
+  { id: 2336, name: "JioHotstar", region: "IN" },
+  { id: 337, name: "Disney+", region: "US" },
+  { id: 1899, name: "Max", region: "US" },
+  { id: 350, name: "Apple TV+", region: "US" },
+  { id: 232, name: "Zee5", region: "IN" },
+  { id: 237, name: "Sony LIV", region: "IN" },
+  { id: 309, name: "Sun NXT", region: "IN" },
+  { id: 532, name: "aha", region: "IN" },
+  { id: 315, name: "Hoichoi", region: "IN" },
+  { id: 515, name: "MX Player", region: "IN" },
+  { id: 15, name: "Hulu", region: "US" },
+  { id: 2303, name: "Paramount+", region: "US" },
+  { id: 386, name: "Peacock", region: "US" },
+  { id: 283, name: "Crunchyroll", region: "US" },
 ];
+const SERVICE_REGIONS = [...new Set(SERVICES.map((s) => s.region))];
+const providerParams = (service) => ({
+  with_watch_providers: service.id,
+  watch_region: service.region,
+  sort_by: "popularity.desc",
+});
 
 const ServiceRow = ({ onOpen, service, setService }) => {
   const [ref, inView] = useInView();
@@ -392,16 +451,17 @@ const ServiceRow = ({ onOpen, service, setService }) => {
 
   useEffect(() => {
     if (!inView) return;
-    tmdbGet(`${TMDB}/watch/providers/tv`, { params: { watch_region: "US" } })
-      .then(({ data }) => setLogos(Object.fromEntries(data.results.map((p) => [p.provider_id, p.logo_path]))))
-      .catch(() => {});
+    // Logos come from each region's provider list (JioHotstar etc. only appear in IN's).
+    Promise.all(
+      SERVICE_REGIONS.map((region) =>
+        tmdbGet(`${TMDB}/watch/providers/tv`, { params: { watch_region: region } })
+          .then(({ data }) => data.results.map((p) => [p.provider_id, p.logo_path]))
+          .catch(() => [])
+      )
+    ).then((lists) => setLogos(Object.fromEntries(lists.flat())));
   }, [inView]);
 
-  const items = useTmdbList(
-    `discover/${type}`,
-    { with_watch_providers: service.id, watch_region: "US", sort_by: "popularity.desc" },
-    { enabled: inView, type }
-  );
+  const items = useTmdbList(`discover/${type}`, providerParams(service), { enabled: inView, type });
 
   return (
     <div ref={ref} id="services" className="scroll-mt-24">
@@ -596,6 +656,7 @@ const HomeRows = ({ variant = "home" }) => {
       <ServiceRow onOpen={onOpen} service={service} setService={setService} />
       <Top10Row onOpen={onOpen} tvOnly={tv} service={service} />
       {!tv && <TrendingRow onOpen={onOpen} />}
+      <RegionalRow onOpen={onOpen} tvOnly={tv} />
       <DiscoverRow
         id="hottest"
         title="Hottest Right Now"
